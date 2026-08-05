@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 export default async function ProductsPage() {
   const products = await prisma.product.findMany({
     orderBy: {
-      createdAt: "desc",
+      id: "asc",
     },
   });
 
@@ -38,6 +38,7 @@ export default async function ProductsPage() {
                 category={product.category}
                 price={`${product.price.toLocaleString("tr-TR")} ₺`}
                 compatibility={product.compatibility}
+                imageUrl={product.imageUrl}
               />
             ))}
           </div>
