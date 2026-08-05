@@ -1,3 +1,4 @@
+import Benefits from "@/components/Benefits";
 import Categories from "@/components/Categories";
 import FeaturedProducts from "@/components/FeaturedProducts";
 import Footer from "@/components/Footer";
@@ -13,6 +14,7 @@ export default function Home() {
       <Categories />
       <VehicleFinder />
       <FeaturedProducts />
+      <Benefits />
       <Footer />
     </>
   );
