@@ -1,47 +1,15 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
+import { prisma } from "@/lib/prisma";
 
-const products = [
-  {
-    name: "HKS Cold Air Intake",
-    category: "Motor",
-    price: "12.500 ₺",
-    compatibility: "Honda Civic FC5",
-  },
-  {
-    name: "Brembo Brake Kit",
-    category: "Fren",
-    price: "24.900 ₺",
-    compatibility: "BMW 320i F30",
-  },
-  {
-    name: "KW Coilover V3",
-    category: "Süspansiyon",
-    price: "38.000 ₺",
-    compatibility: "Volkswagen Golf 7",
-  },
-  {
-    name: "Akrapovič Exhaust System",
-    category: "Egzoz",
-    price: "54.500 ₺",
-    compatibility: "BMW M3 G80",
-  },
-  {
-    name: "Performance Intercooler",
-    category: "Motor",
-    price: "31.750 ₺",
-    compatibility: "Volkswagen Golf 7 GTI",
-  },
-  {
-    name: "Forged Wheel Set",
-    category: "Jant",
-    price: "68.900 ₺",
-    compatibility: "Audi A4 B9",
-  },
-];
+export default async function ProductsPage() {
+  const products = await prisma.product.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 
-export default function ProductsPage() {
   return (
     <>
       <Navbar />
@@ -65,10 +33,10 @@ export default function ProductsPage() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {products.map((product) => (
               <ProductCard
-                key={product.name}
+                key={product.id}
                 name={product.name}
                 category={product.category}
-                price={product.price}
+                price={`${product.price.toLocaleString("tr-TR")} ₺`}
                 compatibility={product.compatibility}
               />
             ))}
