@@ -1,4 +1,7 @@
+import Link from "next/link";
+
 type ProductCardProps = {
+  id: number;
   name: string;
   category: string;
   price: string;
@@ -7,6 +10,7 @@ type ProductCardProps = {
 };
 
 export default function ProductCard({
+  id,
   name,
   category,
   price,
@@ -39,9 +43,12 @@ export default function ProductCard({
         <div className="mt-5 flex items-center justify-between">
           <span className="text-xl font-bold text-white">{price}</span>
 
-          <button className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500">
+          <Link
+            href={`/products/${id}`}
+            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-500"
+          >
             İncele
-          </button>
+          </Link>
         </div>
       </div>
     </article>

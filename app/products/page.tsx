@@ -33,13 +33,14 @@ export default async function ProductsPage() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {products.map((product) => (
               <ProductCard
-                key={product.id}
-                name={product.name}
-                category={product.category}
-                price={`${product.price.toLocaleString("tr-TR")} ₺`}
-                compatibility={product.compatibility}
-                imageUrl={product.imageUrl}
-              />
+             key={product.id}
+             id={product.id}
+             name={product.name}
+             category={product.category}
+             price={`${product.price.toLocaleString("tr-TR")} ₺`}
+             compatibility={product.compatibility}
+            imageUrl={product.imageUrl}
+               />
             ))}
           </div>
         </section>
