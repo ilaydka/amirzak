@@ -2,22 +2,25 @@ import ProductCard from "@/components/ProductCard";
 
 const products = [
   {
-    name: "HKS Cold Air Intake",
-    category: "Motor",
-    price: "12.500 ₺",
-    compatibility: "Honda Civic FC5",
-  },
-  {
-    name: "Brembo Brake Kit",
+    id: 4,
+    name: "Brembo Fren Balatası",
     category: "Fren",
-    price: "24.900 ₺",
-    compatibility: "BMW 320i F30",
+    price: "1.499 ₺",
+    compatibility: "BMW F30",
   },
   {
-    name: "KW Coilover V3",
-    category: "Süspansiyon",
-    price: "38.000 ₺",
+    id: 5,
+    name: "Bosch Yağ Filtresi",
+    category: "Filtre",
+    price: "349 ₺",
     compatibility: "Volkswagen Golf 7",
+  },
+  {
+    id: 6,
+    name: "NGK Buji",
+    category: "Ateşleme",
+    price: "799 ₺",
+    compatibility: "Honda Civic FC5",
   },
 ];
 
@@ -32,7 +35,8 @@ export default function FeaturedProducts() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => (
             <ProductCard
-              key={product.name}
+              key={product.id}
+              id={product.id}
               name={product.name}
               category={product.category}
               price={product.price}
