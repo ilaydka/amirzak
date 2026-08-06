@@ -5,7 +5,7 @@ import { useActionState } from "react";
 import {
   addToCart,
   type AddToCartState,
-} from "@/lib/actions";
+} from "@/lib/cart-actions";
 
 const initialState: AddToCartState = {
   success: false,
