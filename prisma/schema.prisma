@@ -74,7 +74,9 @@ model VerificationToken {
 model Product {
   id            Int      @id @default(autoincrement())
   name          String
+  brand         String?
   category      String
+  description   String?  @db.Text
   price         Float
   compatibility String
   stock         Int
