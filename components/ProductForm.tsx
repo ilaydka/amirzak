@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 
 import {
   createProduct,
+  updateProduct,
   type ProductActionState,
 } from "@/lib/product-actions";
 
@@ -31,8 +32,13 @@ export default function ProductForm({
   mode = "create",
   initialValues,
 }: ProductFormProps) {
+  const action =
+    mode === "edit" && initialValues?.id
+      ? updateProduct.bind(null, initialValues.id)
+      : createProduct;
+
   const [state, formAction, isPending] = useActionState(
-    createProduct,
+    action,
     initialState,
   );
 

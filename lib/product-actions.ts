@@ -210,3 +210,49 @@ export async function updateProduct(
     };
   }
 }
+
+export async function deleteProduct(formData: FormData) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return;
+  }
+
+  if (!(await isAdmin(session.user.id))) {
+    return;
+  }
+
+  const productId = Number(formData.get("productId"));
+
+  if (!Number.isInteger(productId) || productId < 1) {
+    return;
+  }
+
+  const product = await prisma.product.findUnique({
+    where: {
+      id: productId,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!product) {
+    return;
+  }
+
+  try {
+    await prisma.product.delete({
+      where: {
+        id: productId,
+      },
+    });
+
+    revalidatePath("/");
+    revalidatePath("/products");
+    revalidatePath("/admin");
+    revalidatePath("/admin/products");
+  } catch (error) {
+    console.error("DELETE_PRODUCT_ERROR:", error);
+  }
+}
