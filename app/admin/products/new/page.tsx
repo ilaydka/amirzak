@@ -1,30 +1,10 @@
-import { redirect } from "next/navigation";
-
-import { auth } from "@/auth";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import ProductForm from "@/components/ProductForm";
-import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/admin";
 
 export default async function NewProductPage() {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    redirect("/login");
-  }
-
-  const user = await prisma.user.findUnique({
-    where: {
-      id: session.user.id,
-    },
-    select: {
-      role: true,
-    },
-  });
-
-  if (!user || user.role !== "ADMIN") {
-    redirect("/");
-  }
+  await requireAdmin();
 
   return (
     <>

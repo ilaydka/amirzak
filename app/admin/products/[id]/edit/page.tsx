@@ -1,9 +1,9 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
-import { auth } from "@/auth";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import ProductForm from "@/components/ProductForm";
+import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 
 type EditProductPageProps = {
@@ -15,24 +15,7 @@ type EditProductPageProps = {
 export default async function EditProductPage({
   params,
 }: EditProductPageProps) {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    redirect("/login");
-  }
-
-  const user = await prisma.user.findUnique({
-    where: {
-      id: session.user.id,
-    },
-    select: {
-      role: true,
-    },
-  });
-
-  if (!user || user.role !== "ADMIN") {
-    redirect("/");
-  }
+  await requireAdmin();
 
   const { id } = await params;
   const productId = Number(id);

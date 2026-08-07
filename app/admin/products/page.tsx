@@ -1,32 +1,14 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
-import { auth } from "@/auth";
 import DeleteProductButton from "@/components/DeleteProductButton";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import { requireAdmin } from "@/lib/admin";
 import { deleteProduct } from "@/lib/product-actions";
 import { prisma } from "@/lib/prisma";
 
 export default async function AdminProductsPage() {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    redirect("/login");
-  }
-
-  const user = await prisma.user.findUnique({
-    where: {
-      id: session.user.id,
-    },
-    select: {
-      role: true,
-    },
-  });
-
-  if (!user || user.role !== "ADMIN") {
-    redirect("/");
-  }
+  await requireAdmin();
 
   const products = await prisma.product.findMany({
     orderBy: {
