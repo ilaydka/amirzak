@@ -1,49 +1,56 @@
 import ProductCard from "@/components/ProductCard";
+import { prisma } from "@/lib/prisma";
 
-const products = [
-  {
-    id: 4,
-    name: "Brembo Fren Balatası",
-    category: "Fren",
-    price: "1.499 ₺",
-    compatibility: "BMW F30",
-  },
-  {
-    id: 5,
-    name: "Bosch Yağ Filtresi",
-    category: "Filtre",
-    price: "349 ₺",
-    compatibility: "Volkswagen Golf 7",
-  },
-  {
-    id: 6,
-    name: "NGK Buji",
-    category: "Ateşleme",
-    price: "799 ₺",
-    compatibility: "Honda Civic FC5",
-  },
-];
+export default async function FeaturedProducts() {
+  const products = await prisma.product.findMany({
+    where: {
+      isActive: true,
+    },
+    orderBy: {
+      id: "asc",
+    },
+    take: 3,
+  });
 
-export default function FeaturedProducts() {
   return (
     <section className="bg-zinc-950 px-6 py-16 text-white">
       <div className="mx-auto max-w-7xl">
-        <h2 className="mb-10 text-center text-3xl font-bold">
-          Öne Çıkan Ürünler
-        </h2>
+        <div className="mb-10 text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-red-500">
+            Öne Çıkanlar
+          </p>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              id={product.id}
-              name={product.name}
-              category={product.category}
-              price={product.price}
-              compatibility={product.compatibility}
-            />
-          ))}
+          <h2 className="mt-3 text-3xl font-bold">
+            Öne Çıkan Ürünler
+          </h2>
+
+          <p className="mt-3 text-zinc-400">
+            AMİRZAK&apos;ta öne çıkan ürünleri keşfedin.
+          </p>
         </div>
+
+        {products.length === 0 ? (
+          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-8 text-center">
+            <p className="text-zinc-400">
+              Henüz öne çıkan ürün bulunmuyor.
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {products.map((product) => (
+              <ProductCard
+                key={product.id}
+                id={product.id}
+                name={product.name}
+                category={product.category}
+                price={product.price}
+                discountPrice={product.discountPrice}
+                imageUrl={product.imageUrl}
+                stock={product.stock}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

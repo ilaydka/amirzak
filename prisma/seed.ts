@@ -18,33 +18,39 @@ async function main() {
   await prisma.product.createMany({
     data: [
       {
-        name: "Brembo Fren Balatası",
-        category: "Fren",
+        name: "Kablosuz Bluetooth Kulaklık",
+        brand: "SoundMax",
+        category: "Elektronik",
+        description:
+          "Günlük kullanım için tasarlanmış kablosuz Bluetooth kulaklık. Kompakt şarj kutusu ve rahat kullanım sunar.",
         price: 1499,
-        compatibility: "BMW F30",
         stock: 15,
-        imageUrl: "/images/products/brembo.png",
+        imageUrl: null,
       },
       {
-        name: "Bosch Yağ Filtresi",
-        category: "Filtre",
-        price: 349,
-        compatibility: "Volkswagen Golf 7",
+        name: "Paslanmaz Çelik Termos",
+        brand: "ThermoGo",
+        category: "Ev ve Yaşam",
+        description:
+          "Sıcak ve soğuk içecekler için günlük kullanıma uygun paslanmaz çelik termos.",
+        price: 749,
         stock: 40,
         imageUrl: null,
       },
       {
-        name: "NGK Buji",
-        category: "Ateşleme",
-        price: 799,
-        compatibility: "Honda Civic FC5",
+        name: "Sırt Çantası",
+        brand: "UrbanPack",
+        category: "Moda",
+        description:
+          "Günlük kullanım, okul ve seyahat için uygun geniş bölmeli kullanışlı sırt çantası.",
+        price: 999,
         stock: 28,
         imageUrl: null,
       },
     ],
   });
 
-  console.log("✅ Ürünler ve görsel adresleri başarıyla eklendi.");
+  console.log("✅ AMİRZAK örnek ürünleri başarıyla eklendi.");
 }
 
 main()

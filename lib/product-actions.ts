@@ -1,30 +1,78 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
-const productSchema = z.object({
-  name: z.string().trim().min(2, "Ürün adı en az 2 karakter olmalıdır."),
-  brand: z.string().trim().min(2, "Marka en az 2 karakter olmalıdır."),
-  category: z.string().trim().min(2, "Kategori en az 2 karakter olmalıdır."),
-  price: z.coerce.number().positive("Fiyat sıfırdan büyük olmalıdır."),
-  stock: z.coerce
-    .number()
-    .int("Stok tam sayı olmalıdır.")
-    .min(0, "Stok negatif olamaz."),
-  compatibility: z
-    .string()
-    .trim()
-    .min(2, "Uyumlu araç bilgisi zorunludur."),
-  imageUrl: z.string().trim(),
-  description: z
-    .string()
-    .trim()
-    .min(10, "Açıklama en az 10 karakter olmalıdır."),
-});
+const productSchema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(1, "Ürün adı boş bırakılamaz.")
+      .max(120, "Ürün adı en fazla 120 karakter olabilir."),
+
+    brand: z
+      .string()
+      .trim()
+      .min(1, "Marka boş bırakılamaz.")
+      .max(80, "Marka en fazla 80 karakter olabilir."),
+
+    category: z
+      .string()
+      .trim()
+      .min(1, "Kategori seçmelisiniz.")
+      .max(80, "Kategori çok uzun."),
+
+    price: z.coerce
+      .number()
+      .positive("Fiyat sıfırdan büyük olmalıdır."),
+
+    discountPrice: z.preprocess(
+      (value) => {
+        if (value === "" || value === null) {
+          return null;
+        }
+
+        return value;
+      },
+      z.coerce
+        .number()
+        .positive("İndirimli fiyat sıfırdan büyük olmalıdır.")
+        .nullable(),
+    ),
+
+    stock: z.coerce
+      .number()
+      .int("Stok tam sayı olmalıdır.")
+      .min(0, "Stok negatif olamaz."),
+
+    imageUrl: z
+      .string()
+      .trim()
+      .max(500, "Görsel yolu çok uzun."),
+
+    description: z
+      .string()
+      .trim()
+      .min(1, "Açıklama boş bırakılamaz.")
+      .max(3000, "Açıklama en fazla 3000 karakter olabilir."),
+
+    isActive: z.boolean(),
+  })
+  .refine(
+    (data) =>
+      data.discountPrice === null ||
+      data.discountPrice < data.price,
+    {
+      message:
+        "İndirimli fiyat normal fiyattan düşük olmalıdır.",
+      path: ["discountPrice"],
+    },
+  );
 
 export type ProductActionState = {
   success: boolean;
@@ -69,10 +117,11 @@ export async function createProduct(
     brand: formData.get("brand"),
     category: formData.get("category"),
     price: formData.get("price"),
+    discountPrice: formData.get("discountPrice"),
     stock: formData.get("stock"),
-    compatibility: formData.get("compatibility"),
     imageUrl: formData.get("imageUrl"),
     description: formData.get("description"),
+    isActive: formData.get("isActive") === "on",
   });
 
   if (!result.success) {
@@ -84,12 +133,17 @@ export async function createProduct(
     };
   }
 
-  const { imageUrl, ...productData } = result.data;
+  const {
+    imageUrl,
+    discountPrice,
+    ...productData
+  } = result.data;
 
   try {
     await prisma.product.create({
       data: {
         ...productData,
+        discountPrice,
         imageUrl: imageUrl || null,
       },
     });
@@ -98,11 +152,6 @@ export async function createProduct(
     revalidatePath("/products");
     revalidatePath("/admin");
     revalidatePath("/admin/products");
-
-    return {
-      success: true,
-      message: "Ürün başarıyla oluşturuldu.",
-    };
   } catch (error) {
     console.error("CREATE_PRODUCT_ERROR:", error);
 
@@ -111,6 +160,8 @@ export async function createProduct(
       message: "Ürün oluşturulurken bir hata meydana geldi.",
     };
   }
+
+  redirect("/admin/products?created=1");
 }
 
 export async function updateProduct(
@@ -146,10 +197,11 @@ export async function updateProduct(
     brand: formData.get("brand"),
     category: formData.get("category"),
     price: formData.get("price"),
+    discountPrice: formData.get("discountPrice"),
     stock: formData.get("stock"),
-    compatibility: formData.get("compatibility"),
     imageUrl: formData.get("imageUrl"),
     description: formData.get("description"),
+    isActive: formData.get("isActive") === "on",
   });
 
   if (!result.success) {
@@ -177,7 +229,11 @@ export async function updateProduct(
     };
   }
 
-  const { imageUrl, ...productData } = result.data;
+  const {
+    imageUrl,
+    discountPrice,
+    ...productData
+  } = result.data;
 
   try {
     await prisma.product.update({
@@ -186,6 +242,7 @@ export async function updateProduct(
       },
       data: {
         ...productData,
+        discountPrice,
         imageUrl: imageUrl || null,
       },
     });
@@ -196,11 +253,6 @@ export async function updateProduct(
     revalidatePath("/admin");
     revalidatePath("/admin/products");
     revalidatePath(`/admin/products/${productId}/edit`);
-
-    return {
-      success: true,
-      message: "Ürün başarıyla güncellendi.",
-    };
   } catch (error) {
     console.error("UPDATE_PRODUCT_ERROR:", error);
 
@@ -209,23 +261,25 @@ export async function updateProduct(
       message: "Ürün güncellenirken bir hata meydana geldi.",
     };
   }
+
+  redirect("/admin/products?updated=1");
 }
 
 export async function deleteProduct(formData: FormData) {
   const session = await auth();
 
   if (!session?.user?.id) {
-    return;
+    redirect("/login");
   }
 
   if (!(await isAdmin(session.user.id))) {
-    return;
+    redirect("/admin/products?deleteError=1");
   }
 
   const productId = Number(formData.get("productId"));
 
   if (!Number.isInteger(productId) || productId < 1) {
-    return;
+    redirect("/admin/products?deleteError=1");
   }
 
   const product = await prisma.product.findUnique({
@@ -234,11 +288,21 @@ export async function deleteProduct(formData: FormData) {
     },
     select: {
       id: true,
+      orderItems: {
+        select: {
+          id: true,
+        },
+        take: 1,
+      },
     },
   });
 
   if (!product) {
-    return;
+    redirect("/admin/products?deleteError=1");
+  }
+
+  if (product.orderItems.length > 0) {
+    redirect("/admin/products?deleteError=ordered");
   }
 
   try {
@@ -254,5 +318,9 @@ export async function deleteProduct(formData: FormData) {
     revalidatePath("/admin/products");
   } catch (error) {
     console.error("DELETE_PRODUCT_ERROR:", error);
+
+    redirect("/admin/products?deleteError=1");
   }
+
+  redirect("/admin/products?deleted=1");
 }

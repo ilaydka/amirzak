@@ -1,18 +1,18 @@
 const benefits = [
   {
-    title: "Araç Uyumluluğu",
+    title: "Geniş Ürün Seçeneği",
     description:
-      "Aracının marka, model, kasa ve motor bilgilerine uygun parçaları kolayca bul.",
+      "Farklı kategorilerdeki ürünleri tek platformda keşfet, ihtiyaçlarına uygun ürünleri kolayca bul.",
   },
   {
-    title: "Güvenilir Satıcılar",
+    title: "Güvenilir Alışveriş",
     description:
-      "Yönetici onayından geçmiş satıcıların ürünlerini güvenle incele.",
+      "Ürünleri, satıcıları ve kullanıcı değerlendirmelerini inceleyerek alışverişini güvenle yap.",
   },
   {
-    title: "Detaylı Ürün Bilgisi",
+    title: "Kolay ve Hızlı Deneyim",
     description:
-      "Ürünlerin teknik özelliklerini, fiyatlarını ve uyumlu araçlarını karşılaştır.",
+      "Ürünleri karşılaştır, sepetine ekle ve siparişlerini tek bir yerden kolayca takip et.",
   },
 ];
 
@@ -22,11 +22,11 @@ export default function Benefits() {
       <div className="mx-auto max-w-7xl">
         <div className="mb-10 text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-red-500">
-            Neden AutoHub?
+            Neden AMİRZAK?
           </p>
 
           <h2 className="mt-3 text-3xl font-bold">
-            Doğru parçayı güvenle bul
+            Aradığın her şeyi tek yerde keşfet
           </h2>
         </div>
 
@@ -36,7 +36,9 @@ export default function Benefits() {
               key={benefit.title}
               className="rounded-xl border border-zinc-800 bg-zinc-950 p-6"
             >
-              <h3 className="text-xl font-bold">{benefit.title}</h3>
+              <h3 className="text-xl font-bold">
+                {benefit.title}
+              </h3>
 
               <p className="mt-3 leading-7 text-zinc-400">
                 {benefit.description}

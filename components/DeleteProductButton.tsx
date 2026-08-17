@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 type DeleteProductButtonProps = {
   productId: number;
   productName: string;
@@ -11,6 +13,8 @@ export default function DeleteProductButton({
   productName,
   action,
 }: DeleteProductButtonProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   return (
     <form
       action={action}
@@ -21,16 +25,24 @@ export default function DeleteProductButton({
 
         if (!confirmed) {
           event.preventDefault();
+          return;
         }
+
+        setIsSubmitting(true);
       }}
     >
-      <input type="hidden" name="productId" value={productId} />
+      <input
+        type="hidden"
+        name="productId"
+        value={productId}
+      />
 
       <button
         type="submit"
-        className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold transition hover:bg-red-500"
+        disabled={isSubmitting}
+        className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        Sil
+        {isSubmitting ? "Siliniyor..." : "Sil"}
       </button>
     </form>
   );

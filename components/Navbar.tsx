@@ -1,78 +1,133 @@
 import Link from "next/link";
 
-import { auth, signOut } from "@/auth";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 
 export default async function Navbar() {
   const session = await auth();
 
-  return (
-    <nav className="flex items-center justify-between border-b border-zinc-800 bg-zinc-950 px-8 py-5 text-white">
-      <Link href="/" className="text-2xl font-bold text-red-500">
-        AutoHub
-      </Link>
+  let cartItemCount = 0;
+  let isAdmin = false;
 
-      <ul className="flex items-center gap-8">
-        <li>
-          <Link href="/products" className="transition hover:text-red-500">
+  if (session?.user?.id) {
+    const [cart, user] = await Promise.all([
+      prisma.cart.findUnique({
+        where: {
+          userId: session.user.id,
+        },
+        include: {
+          items: true,
+        },
+      }),
+
+      prisma.user.findUnique({
+        where: {
+          id: session.user.id,
+        },
+        select: {
+          role: true,
+        },
+      }),
+    ]);
+
+    cartItemCount =
+      cart?.items.reduce(
+        (total, item) => total + item.quantity,
+        0,
+      ) ?? 0;
+
+    isAdmin = user?.role === "ADMIN";
+  }
+
+  return (
+    <header className="border-b border-zinc-800 bg-zinc-950 text-white">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-5">
+        <Link
+          href="/"
+          className="text-2xl font-bold tracking-tight"
+        >
+          AMİR<span className="text-red-500">ZAK</span>
+        </Link>
+
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          <Link
+            href="/"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+          >
+            Ana Sayfa
+          </Link>
+
+          <Link
+            href="/products"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+          >
             Ürünler
           </Link>
-        </li>
 
-        <li>
-          <Link href="/brands" className="transition hover:text-red-500">
-            Markalar
+          <Link
+            href="/support"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+          >
+            Destek
           </Link>
-        </li>
 
-        <li>
-          <Link href="/dealers" className="transition hover:text-red-500">
-            Satıcılar
-          </Link>
-        </li>
-      </ul>
-
-      <div className="flex items-center gap-4">
-        {session?.user ? (
-          <>
-            <span className="text-sm text-zinc-300">
-              {session.user.name ?? session.user.email}
-            </span>
-
-            <form
-              action={async () => {
-                "use server";
-
-                await signOut({
-                  redirectTo: "/",
-                });
-              }}
-            >
-              <button
-                type="submit"
-                className="rounded-lg bg-red-600 px-5 py-2 font-semibold transition hover:bg-red-500"
+          {session?.user?.id ? (
+            <>
+              <Link
+                href="/cart"
+                className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
               >
-                Çıkış Yap
-              </button>
-            </form>
-          </>
-        ) : (
-          <>
-            <Link
-              href="/login"
-              className="rounded-lg border border-zinc-700 px-5 py-2 font-semibold transition hover:border-red-500"
-            >
-              Giriş Yap
-            </Link>
+                Sepetim
 
-            <Link
-              href="/register"
-              className="rounded-lg bg-red-600 px-5 py-2 font-semibold transition hover:bg-red-500"
-            >
-              Kayıt Ol
-            </Link>
-          </>
-        )}
-      </div>
-    </nav>
+                {cartItemCount > 0 && (
+                  <span className="ml-2 rounded-full bg-red-600 px-2 py-0.5 text-xs font-bold text-white">
+                    {cartItemCount}
+                  </span>
+                )}
+              </Link>
+
+              <Link
+                href="/orders"
+                className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+              >
+                Siparişlerim
+              </Link>
+
+              <Link
+                href="/profile"
+                className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+              >
+                Profilim
+              </Link>
+
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="rounded-lg border border-red-600 px-3 py-2 text-sm font-semibold text-red-400 transition hover:bg-red-600 hover:text-white"
+                >
+                  Admin
+                </Link>
+              )}
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+              >
+                Giriş Yap
+              </Link>
+
+              <Link
+                href="/register"
+                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-500"
+              >
+                Kayıt Ol
+              </Link>
+            </>
+          )}
+        </div>
+      </nav>
+    </header>
   );
 }

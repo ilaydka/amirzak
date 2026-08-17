@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 
 const productSchema = z.object({
   productId: z.coerce.number().int().positive(),
+  quantity: z.coerce.number().int().min(1),
 });
 
 const cartItemSchema = z.object({
@@ -17,6 +18,7 @@ const cartItemSchema = z.object({
 export type AddToCartState = {
   success: boolean;
   message: string;
+  cartQuantity?: number;
 };
 
 export async function addToCart(
@@ -34,20 +36,28 @@ export async function addToCart(
 
   const result = productSchema.safeParse({
     productId: formData.get("productId"),
+    quantity: formData.get("quantity") ?? 1,
   });
 
   if (!result.success) {
     return {
       success: false,
-      message: "Geçersiz ürün bilgisi.",
+      message: "Geçersiz ürün veya adet bilgisi.",
     };
   }
 
+  const { productId, quantity } = result.data;
+
   try {
-    await prisma.$transaction(async (transaction) => {
-      const product = await transaction.product.findUnique({
+    const cartQuantity = await prisma.$transaction(async (tx) => {
+      const product = await tx.product.findUnique({
         where: {
-          id: result.data.productId,
+          id: productId,
+        },
+        select: {
+          id: true,
+          stock: true,
+          isActive: true,
         },
       });
 
@@ -55,11 +65,19 @@ export async function addToCart(
         throw new Error("PRODUCT_NOT_FOUND");
       }
 
+      if (!product.isActive) {
+        throw new Error("PRODUCT_INACTIVE");
+      }
+
       if (product.stock < 1) {
         throw new Error("OUT_OF_STOCK");
       }
 
-      const cart = await transaction.cart.upsert({
+      if (quantity > product.stock) {
+        throw new Error(`STOCK_LIMIT:${product.stock}`);
+      }
+
+      const cart = await tx.cart.upsert({
         where: {
           userId: session.user.id,
         },
@@ -69,7 +87,7 @@ export async function addToCart(
         },
       });
 
-      const existingItem = await transaction.cartItem.findUnique({
+      const existingItem = await tx.cartItem.findUnique({
         where: {
           cartId_productId: {
             cartId: cart.id,
@@ -78,38 +96,50 @@ export async function addToCart(
         },
       });
 
-      if (existingItem && existingItem.quantity >= product.stock) {
-        throw new Error("STOCK_LIMIT");
-      }
-
       if (existingItem) {
-        await transaction.cartItem.update({
+        const newQuantity =
+          existingItem.quantity + quantity;
+
+        if (newQuantity > product.stock) {
+          throw new Error(`STOCK_LIMIT:${product.stock}`);
+        }
+
+        const updatedItem = await tx.cartItem.update({
           where: {
             id: existingItem.id,
           },
           data: {
-            quantity: {
-              increment: 1,
-            },
+            quantity: newQuantity,
           },
         });
-      } else {
-        await transaction.cartItem.create({
-          data: {
-            cartId: cart.id,
-            productId: product.id,
-          },
-        });
+
+        return updatedItem.quantity;
       }
+
+      const createdItem = await tx.cartItem.create({
+        data: {
+          cartId: cart.id,
+          productId: product.id,
+          quantity,
+        },
+      });
+
+      return createdItem.quantity;
     });
 
+    revalidatePath("/");
     revalidatePath("/cart");
+    revalidatePath("/products");
+    revalidatePath(`/products/${productId}`);
 
     return {
       success: true,
-      message: "Ürün sepetinize eklendi.",
+      message: `Sepetinizde bu üründen toplam ${cartQuantity} adet var.`,
+      cartQuantity,
     };
   } catch (error) {
+    console.error("ADD_TO_CART_ERROR:", error);
+
     if (error instanceof Error) {
       if (error.message === "PRODUCT_NOT_FOUND") {
         return {
@@ -118,24 +148,33 @@ export async function addToCart(
         };
       }
 
-      if (error.message === "OUT_OF_STOCK") {
+      if (error.message === "PRODUCT_INACTIVE") {
         return {
           success: false,
-          message: "Bu ürünün stoğu tükenmiş.",
+          message: "Bu ürün artık satışta değil.",
         };
       }
 
-      if (error.message === "STOCK_LIMIT") {
+      if (error.message === "OUT_OF_STOCK") {
         return {
           success: false,
-          message: "Sepetteki ürün adedi mevcut stok miktarına ulaştı.",
+          message: "Bu ürün tükenmiştir.",
+        };
+      }
+
+      if (error.message.startsWith("STOCK_LIMIT:")) {
+        return {
+          success: false,
+          message:
+            "Sepetinizdeki adet mevcut stok sınırına ulaştı.",
         };
       }
     }
 
     return {
       success: false,
-      message: "Ürün sepete eklenirken bir hata oluştu.",
+      message:
+        "Ürün sepete eklenirken teknik bir hata oluştu.",
     };
   }
 }
@@ -167,7 +206,15 @@ export async function increaseCartItem(formData: FormData) {
     },
   });
 
-  if (!cartItem || cartItem.quantity >= cartItem.product.stock) {
+  if (!cartItem) {
+    return;
+  }
+
+  if (!cartItem.product.isActive) {
+    return;
+  }
+
+  if (cartItem.quantity >= cartItem.product.stock) {
     return;
   }
 
@@ -182,7 +229,9 @@ export async function increaseCartItem(formData: FormData) {
     },
   });
 
+  revalidatePath("/");
   revalidatePath("/cart");
+  revalidatePath("/products");
 }
 
 export async function decreaseCartItem(formData: FormData) {
@@ -232,7 +281,9 @@ export async function decreaseCartItem(formData: FormData) {
     });
   }
 
+  revalidatePath("/");
   revalidatePath("/cart");
+  revalidatePath("/products");
 }
 
 export async function removeCartItem(formData: FormData) {
@@ -269,5 +320,7 @@ export async function removeCartItem(formData: FormData) {
     },
   });
 
+  revalidatePath("/");
   revalidatePath("/cart");
+  revalidatePath("/products");
 }

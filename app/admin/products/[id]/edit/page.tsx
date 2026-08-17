@@ -44,7 +44,9 @@ export default async function EditProductPage({
             Ürün Düzenle
           </p>
 
-          <h1 className="mt-4 text-4xl font-bold">{product.name}</h1>
+          <h1 className="mt-4 text-4xl font-bold">
+            {product.name}
+          </h1>
 
           <div className="mt-10 rounded-2xl border border-zinc-800 bg-zinc-900 p-8">
             <ProductForm
@@ -55,10 +57,11 @@ export default async function EditProductPage({
                 brand: product.brand ?? "",
                 category: product.category,
                 price: product.price,
+                discountPrice: product.discountPrice,
                 stock: product.stock,
-                compatibility: product.compatibility,
                 imageUrl: product.imageUrl,
                 description: product.description ?? "",
+                isActive: product.isActive,
               }}
             />
           </div>

@@ -1,3 +1,5 @@
+import QuickOrderButton from "@/components/QuickOrderButton";
+
 import {
   decreaseCartItem,
   increaseCartItem,
@@ -12,9 +14,10 @@ type CartItemCardProps = {
       name: string;
       category: string;
       price: number;
-      compatibility: string;
+      discountPrice: number | null;
       imageUrl: string | null;
       stock: number;
+      isActive: boolean;
     };
   };
 };
@@ -22,7 +25,27 @@ type CartItemCardProps = {
 export default function CartItemCard({
   item,
 }: CartItemCardProps) {
-  const lineTotal = item.product.price * item.quantity;
+  const hasDiscount =
+    item.product.discountPrice !== null &&
+    item.product.discountPrice < item.product.price;
+
+  const currentPrice =
+    hasDiscount && item.product.discountPrice !== null
+      ? item.product.discountPrice
+      : item.product.price;
+
+  const lineTotal =
+    currentPrice * item.quantity;
+
+  const lowStock =
+    item.product.stock > 0 &&
+    item.product.stock <= 3;
+
+  const outOfStock =
+    item.product.stock < 1;
+
+  const unavailable =
+    !item.product.isActive;
 
   return (
     <article className="grid gap-6 rounded-2xl border border-zinc-800 bg-zinc-900 p-5 md:grid-cols-[140px_1fr_auto]">
@@ -49,14 +72,38 @@ export default function CartItemCard({
           {item.product.name}
         </h2>
 
-        <p className="mt-2 text-sm text-zinc-400">
-          Uyumlu araç: {item.product.compatibility}
-        </p>
+        <div className="mt-4">
+          {hasDiscount && (
+            <p className="text-sm text-zinc-500 line-through">
+              {item.product.price.toLocaleString("tr-TR")} ₺
+            </p>
+          )}
 
-        <p className="mt-4 text-sm text-zinc-300">
-          Birim fiyat:{" "}
-          {item.product.price.toLocaleString("tr-TR")} ₺
-        </p>
+          <p className="text-sm text-zinc-300">
+            Birim fiyat:{" "}
+            <span className="font-semibold text-white">
+              {currentPrice.toLocaleString("tr-TR")} ₺
+            </span>
+          </p>
+        </div>
+
+        {unavailable && (
+          <p className="mt-3 text-sm font-semibold text-red-400">
+            Bu ürün artık satışta değil.
+          </p>
+        )}
+
+        {!unavailable && outOfStock && (
+          <p className="mt-3 text-sm font-semibold text-red-400">
+            Tükendi
+          </p>
+        )}
+
+        {!unavailable && lowStock && (
+          <p className="mt-3 text-sm font-semibold text-orange-400">
+            Son {item.product.stock} ürün!
+          </p>
+        )}
 
         <div className="mt-5 flex items-center gap-3">
           <form action={decreaseCartItem}>
@@ -88,7 +135,10 @@ export default function CartItemCard({
 
             <button
               type="submit"
-              disabled={item.quantity >= item.product.stock}
+              disabled={
+                unavailable ||
+                item.quantity >= item.product.stock
+              }
               className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-700 text-lg font-bold transition hover:border-red-500 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
               aria-label="Ürün adedini artır"
             >
@@ -111,13 +161,15 @@ export default function CartItemCard({
             </button>
           </form>
         </div>
+
+        {!unavailable && !outOfStock && (
+          <QuickOrderButton
+            cartItemId={item.id}
+          />
+        )}
       </div>
 
-      <div className="flex flex-col justify-between md:text-right">
-        <p className="text-sm text-zinc-400">
-          Stok: {item.product.stock} adet
-        </p>
-
+      <div className="flex flex-col justify-end md:text-right">
         <div>
           <p className="text-sm text-zinc-400">
             Satır toplamı

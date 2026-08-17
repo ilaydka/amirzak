@@ -13,20 +13,47 @@ enum Role {
   ADMIN
 }
 
-model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime? @map("email_verified")
-  image         String?
-  passwordHash  String?   @map("password_hash")
-  role          Role      @default(USER)
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
 
-  accounts Account[]
-  sessions Session[]
-  cart     Cart?
+enum SupportStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  REJECTED
+}
+
+model User {
+  id               String    @id @default(cuid())
+  name             String?
+  firstName        String?   @map("first_name")
+  lastName         String?   @map("last_name")
+  phoneCountryCode String?   @map("phone_country_code")
+  phone            String?
+  countryCode      String?   @map("country_code")
+  city             String?
+  postalCode       String?   @map("postal_code")
+  address          String?   @db.Text
+  email            String?   @unique
+  emailVerified    DateTime? @map("email_verified")
+  image            String?
+  passwordHash     String?   @map("password_hash")
+  role             Role      @default(USER)
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  accounts       Account[]
+  sessions       Session[]
+  cart           Cart?
+  reviews        Review[]
+  orders         Order[]
+  supportTickets SupportTicket[]
+  supportReplies SupportReply[]
 
   @@map("users")
 }
@@ -78,12 +105,16 @@ model Product {
   category      String
   description   String?  @db.Text
   price         Float
-  compatibility String
+  discountPrice Float?   @map("discount_price")
   stock         Int
   imageUrl      String?
+  isActive      Boolean  @default(true) @map("is_active")
   createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
-  cartItems CartItem[]
+  cartItems  CartItem[]
+  reviews    Review[]
+  orderItems OrderItem[]
 }
 
 model Cart {
@@ -111,4 +142,83 @@ model CartItem {
 
   @@unique([cartId, productId])
   @@map("cart_items")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String   @db.Text
+  userId    String   @map("user_id")
+  productId Int      @map("product_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("reviews")
+}
+
+model Order {
+  id        String      @id @default(cuid())
+  userId    String      @map("user_id")
+  status    OrderStatus @default(PENDING)
+  total     Float
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items OrderItem[]
+
+  @@index([userId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String @map("order_id")
+  productId Int    @map("product_id")
+  quantity  Int
+  unitPrice Float  @map("unit_price")
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model SupportTicket {
+  id        String        @id @default(cuid())
+  userId    String        @map("user_id")
+  subject   String
+  category  String
+  message   String        @db.Text
+  status    SupportStatus @default(OPEN)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replies SupportReply[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("support_tickets")
+}
+
+model SupportReply {
+  id        String   @id @default(cuid())
+  ticketId  String   @map("ticket_id")
+  adminId   String   @map("admin_id")
+  message   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  admin  User          @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@index([adminId])
+  @@map("support_replies")
 }

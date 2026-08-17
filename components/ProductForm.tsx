@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 
 import {
   createProduct,
@@ -21,10 +21,11 @@ type ProductFormProps = {
     brand: string;
     category: string;
     price: number;
+    discountPrice: number | null;
     stock: number;
-    compatibility: string;
     imageUrl: string | null;
     description: string;
+    isActive: boolean;
   };
 };
 
@@ -44,35 +45,30 @@ export default function ProductForm({
 
   const [name, setName] = useState(initialValues?.name ?? "");
   const [brand, setBrand] = useState(initialValues?.brand ?? "");
-  const [category, setCategory] = useState(initialValues?.category ?? "");
+  const [category, setCategory] = useState(
+    initialValues?.category ?? "",
+  );
   const [price, setPrice] = useState(
     initialValues ? String(initialValues.price) : "",
+  );
+  const [discountPrice, setDiscountPrice] = useState(
+    initialValues?.discountPrice !== null &&
+      initialValues?.discountPrice !== undefined
+      ? String(initialValues.discountPrice)
+      : "",
   );
   const [stock, setStock] = useState(
     initialValues ? String(initialValues.stock) : "",
   );
-  const [compatibility, setCompatibility] = useState(
-    initialValues?.compatibility ?? "",
+  const [imageUrl, setImageUrl] = useState(
+    initialValues?.imageUrl ?? "",
   );
-  const [imageUrl, setImageUrl] = useState(initialValues?.imageUrl ?? "");
   const [description, setDescription] = useState(
     initialValues?.description ?? "",
   );
-
-  useEffect(() => {
-    if (!state.success || mode !== "create") {
-      return;
-    }
-
-    setName("");
-    setBrand("");
-    setCategory("");
-    setPrice("");
-    setStock("");
-    setCompatibility("");
-    setImageUrl("");
-    setDescription("");
-  }, [mode, state.success]);
+  const [isActive, setIsActive] = useState(
+    initialValues?.isActive ?? true,
+  );
 
   return (
     <form action={formAction} className="space-y-6">
@@ -91,7 +87,8 @@ export default function ProductForm({
           value={name}
           onChange={(event) => setName(event.target.value)}
           required
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none focus:border-red-500"
+          placeholder="Ürün adını girin"
+          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none placeholder:text-zinc-500 focus:border-red-500"
         />
       </div>
 
@@ -110,7 +107,8 @@ export default function ProductForm({
           value={brand}
           onChange={(event) => setBrand(event.target.value)}
           required
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none focus:border-red-500"
+          placeholder="Ürün markasını girin"
+          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none placeholder:text-zinc-500 focus:border-red-500"
         />
       </div>
 
@@ -122,15 +120,25 @@ export default function ProductForm({
           Kategori
         </label>
 
-        <input
+        <select
           id="category"
           name="category"
-          type="text"
           value={category}
           onChange={(event) => setCategory(event.target.value)}
           required
           className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none focus:border-red-500"
-        />
+        >
+          <option value="">Kategori seçin</option>
+          <option value="Elektronik">Elektronik</option>
+          <option value="Giyim">Giyim</option>
+          <option value="Ev & Yaşam">Ev & Yaşam</option>
+          <option value="Kitap">Kitap</option>
+          <option value="Kozmetik">Kozmetik</option>
+          <option value="Spor">Spor</option>
+          <option value="Otomotiv">Otomotiv</option>
+          <option value="Oyuncak">Oyuncak</option>
+          <option value="Diğer">Diğer</option>
+        </select>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -139,7 +147,7 @@ export default function ProductForm({
             htmlFor="price"
             className="mb-2 block text-sm font-medium text-zinc-300"
           >
-            Fiyat
+            Normal Fiyat
           </label>
 
           <input
@@ -151,47 +159,52 @@ export default function ProductForm({
             value={price}
             onChange={(event) => setPrice(event.target.value)}
             required
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none focus:border-red-500"
+            placeholder="0.00"
+            className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none placeholder:text-zinc-500 focus:border-red-500"
           />
         </div>
 
         <div>
           <label
-            htmlFor="stock"
+            htmlFor="discountPrice"
             className="mb-2 block text-sm font-medium text-zinc-300"
           >
-            Stok
+            İndirimli Fiyat
           </label>
 
           <input
-            id="stock"
-            name="stock"
+            id="discountPrice"
+            name="discountPrice"
             type="number"
-            min="0"
-            value={stock}
-            onChange={(event) => setStock(event.target.value)}
-            required
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none focus:border-red-500"
+            min="0.01"
+            step="0.01"
+            value={discountPrice}
+            onChange={(event) => setDiscountPrice(event.target.value)}
+            placeholder="İndirim yoksa boş bırakın"
+            className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none placeholder:text-zinc-500 focus:border-red-500"
           />
         </div>
       </div>
 
       <div>
         <label
-          htmlFor="compatibility"
+          htmlFor="stock"
           className="mb-2 block text-sm font-medium text-zinc-300"
         >
-          Uyumlu Araç
+          Stok
         </label>
 
         <input
-          id="compatibility"
-          name="compatibility"
-          type="text"
-          value={compatibility}
-          onChange={(event) => setCompatibility(event.target.value)}
+          id="stock"
+          name="stock"
+          type="number"
+          min="0"
+          step="1"
+          value={stock}
+          onChange={(event) => setStock(event.target.value)}
           required
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none focus:border-red-500"
+          placeholder="0"
+          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none placeholder:text-zinc-500 focus:border-red-500"
         />
       </div>
 
@@ -210,7 +223,7 @@ export default function ProductForm({
           value={imageUrl}
           onChange={(event) => setImageUrl(event.target.value)}
           placeholder="/images/products/urun.jpg"
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none focus:border-red-500"
+          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none placeholder:text-zinc-500 focus:border-red-500"
         />
       </div>
 
@@ -229,18 +242,35 @@ export default function ProductForm({
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           required
-          className="w-full resize-y rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none focus:border-red-500"
+          placeholder="Ürün açıklamasını girin"
+          className="w-full resize-y rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none placeholder:text-zinc-500 focus:border-red-500"
         />
       </div>
 
-      {state.message && (
-        <p
-          className={
-            state.success
-              ? "rounded-lg bg-green-950 p-3 text-sm text-green-300"
-              : "rounded-lg bg-red-950 p-3 text-sm text-red-300"
-          }
-        >
+      <div className="rounded-xl border border-zinc-700 bg-zinc-800 p-4">
+        <label className="flex cursor-pointer items-center gap-3">
+          <input
+            type="checkbox"
+            name="isActive"
+            checked={isActive}
+            onChange={(event) => setIsActive(event.target.checked)}
+            className="h-5 w-5 accent-red-600"
+          />
+
+          <div>
+            <p className="font-semibold text-white">
+              Ürün Aktif
+            </p>
+
+            <p className="mt-1 text-sm text-zinc-400">
+              Pasif ürünler mağazada satışa açık olmayacaktır.
+            </p>
+          </div>
+        </label>
+      </div>
+
+      {state.message && !state.success && (
+        <p className="rounded-lg bg-red-950 p-3 text-sm text-red-300">
           {state.message}
         </p>
       )}
