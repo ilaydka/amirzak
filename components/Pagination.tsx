@@ -33,17 +33,17 @@ export default function Pagination({
   }
 
   return (
-    <div className="mt-10 flex items-center justify-center gap-4">
+    <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
       <button
         type="button"
         onClick={() => goToPage(currentPage - 1)}
         disabled={currentPage <= 1}
-        className="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-semibold transition hover:border-red-500 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-40"
+        className="secondary-button min-h-10 px-4 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-40"
       >
         ← Önceki
       </button>
 
-      <span className="text-sm text-zinc-400">
+      <span className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-text-soft shadow-sm">
         Sayfa {currentPage} / {totalPages}
       </span>
 
@@ -51,7 +51,7 @@ export default function Pagination({
         type="button"
         onClick={() => goToPage(currentPage + 1)}
         disabled={currentPage >= totalPages}
-        className="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-semibold transition hover:border-red-500 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-40"
+        className="secondary-button min-h-10 px-4 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-40"
       >
         Sonraki →
       </button>

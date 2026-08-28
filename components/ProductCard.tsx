@@ -11,10 +11,6 @@ import {
   addToCart,
   type AddToCartState,
 } from "@/lib/cart-actions";
-import {
-  buyNow,
-  type OrderActionState,
-} from "@/lib/order-actions";
 
 type ProductCardProps = {
   id: number;
@@ -31,11 +27,6 @@ const initialCartState: AddToCartState = {
   message: "",
 };
 
-const initialOrderState: OrderActionState = {
-  success: false,
-  message: "",
-};
-
 export default function ProductCard({
   id,
   name,
@@ -47,23 +38,19 @@ export default function ProductCard({
 }: ProductCardProps) {
   const [quantity, setQuantity] = useState(1);
 
-  const [cartState, cartAction, isCartPending] =
-    useActionState(
-      addToCart,
-      initialCartState,
-    );
+  const [
+    cartState,
+    cartAction,
+    isCartPending,
+  ] = useActionState(
+    addToCart,
+    initialCartState,
+  );
 
-  const [orderState, orderAction, isOrderPending] =
-    useActionState(
-      buyNow,
-      initialOrderState,
-    );
-
-  const [showCartMessage, setShowCartMessage] =
-    useState(false);
-
-  const [showOrderMessage, setShowOrderMessage] =
-    useState(false);
+  const [
+    showCartMessage,
+    setShowCartMessage,
+  ] = useState(false);
 
   useEffect(() => {
     if (!cartState.message) {
@@ -72,34 +59,12 @@ export default function ProductCard({
 
     setShowCartMessage(true);
 
-    if (!cartState.success) {
-      return;
-    }
-
     const timer = setTimeout(() => {
       setShowCartMessage(false);
     }, 3000);
 
     return () => clearTimeout(timer);
   }, [cartState]);
-
-  useEffect(() => {
-    if (!orderState.message) {
-      return;
-    }
-
-    setShowOrderMessage(true);
-
-    if (!orderState.success) {
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      setShowOrderMessage(false);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, [orderState]);
 
   const outOfStock = stock < 1;
 
@@ -128,77 +93,92 @@ export default function ProductCard({
   }
 
   return (
-    <article className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
-      <div className="relative flex h-52 items-center justify-center bg-zinc-800">
-        {hasDiscount && (
-          <span className="absolute left-3 top-3 rounded-full bg-red-600 px-3 py-1 text-xs font-bold text-white">
-            İndirim
-          </span>
-        )}
+    <article className="group flex h-full flex-col overflow-hidden rounded-[18px] border border-border bg-surface shadow-sm transition duration-200 hover:-translate-y-1 hover:border-border-brand hover:shadow-md">
+      <Link
+        href={`/products/${id}`}
+        className="relative block shrink-0 overflow-hidden border-b border-border bg-surface-soft"
+      >
+        <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
+          {outOfStock ? (
+            <span className="status-danger rounded-full px-3 py-1.5 text-xs font-semibold">
+              Tükendi
+            </span>
+          ) : (
+            <span className="rounded-full bg-brand-soft px-3 py-1.5 text-xs font-semibold text-white">
+              Stokta
+            </span>
+          )}
+
+          {hasDiscount && (
+            <span className="status-warning rounded-full px-3 py-1.5 text-xs font-semibold">
+              İndirim
+            </span>
+          )}
+        </div>
 
         {imageUrl ? (
           <img
             src={imageUrl}
             alt={name}
-            className="h-full w-full object-contain p-4"
+            className="block h-auto w-full transition duration-300 group-hover:scale-[1.02]"
           />
         ) : (
-          <p className="text-zinc-500">
-            Ürün Görseli
-          </p>
-        )}
-      </div>
+          <div className="flex aspect-[5/4] w-full flex-col items-center justify-center gap-3 text-text-muted">
+            <span className="text-3xl">
+              ◇
+            </span>
 
-      <div className="p-5">
-        <p className="text-sm font-semibold text-red-500">
+            <p className="text-sm">
+              Ürün Görseli
+            </p>
+          </div>
+        )}
+      </Link>
+
+      <div className="flex flex-1 flex-col p-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand-soft">
           {category}
         </p>
 
-        <h3 className="mt-2 text-xl font-bold text-white">
-          {name}
-        </h3>
+        <Link
+          href={`/products/${id}`}
+          className="mt-2 block"
+        >
+          <h3 className="line-clamp-2 font-serif text-xl font-semibold leading-snug text-text transition group-hover:text-brand">
+            {name}
+          </h3>
+        </Link>
 
-        <div className="mt-5 flex items-end justify-between gap-4">
-          <div>
-            {hasDiscount && (
-              <p className="text-sm text-zinc-500 line-through">
-                {price.toLocaleString("tr-TR")} ₺
-              </p>
-            )}
-
-            <p className="text-xl font-bold text-white">
-              {currentPrice.toLocaleString("tr-TR")} ₺
+        <div className="mt-5 min-h-[58px]">
+          {hasDiscount && (
+            <p className="text-sm text-text-muted line-through">
+              {price.toLocaleString("tr-TR")} ₺
             </p>
-          </div>
+          )}
 
-          <span
-            className={
-              outOfStock
-                ? "text-sm font-semibold text-red-400"
-                : "text-sm font-semibold text-green-400"
-            }
-          >
-            {outOfStock ? "Tükendi" : "Stokta"}
-          </span>
+          <p className="mt-0.5 text-2xl font-bold tracking-tight text-brand">
+            {currentPrice.toLocaleString("tr-TR")} ₺
+          </p>
         </div>
 
         {!outOfStock && (
-          <div className="mt-5">
-            <p className="mb-2 text-sm font-semibold text-zinc-300">
+          <div className="mt-4 flex items-center justify-between border-y border-border py-4">
+            <p className="text-sm font-medium text-text-soft">
               Adet
             </p>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center overflow-hidden rounded-full border border-border bg-surface">
               <button
                 type="button"
                 onClick={decreaseQuantity}
                 disabled={quantity <= 1}
-                className="h-10 w-10 rounded-lg border border-zinc-700 text-lg font-bold text-white transition hover:border-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                aria-label="Adedi azalt"
+                className="flex h-9 w-10 items-center justify-center text-lg font-medium text-brand transition hover:bg-brand-pale disabled:cursor-not-allowed disabled:opacity-30"
               >
                 −
               </button>
 
-              <span className="min-w-10 text-center font-semibold text-white">
+              <span className="min-w-10 text-center text-sm font-semibold text-text">
                 {quantity}
               </span>
 
@@ -206,7 +186,8 @@ export default function ProductCard({
                 type="button"
                 onClick={increaseQuantity}
                 disabled={quantity >= stock}
-                className="h-10 w-10 rounded-lg border border-zinc-700 text-lg font-bold text-white transition hover:border-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                aria-label="Adedi artır"
+                className="flex h-9 w-10 items-center justify-center text-lg font-medium text-brand transition hover:bg-brand-pale disabled:cursor-not-allowed disabled:opacity-30"
               >
                 +
               </button>
@@ -214,102 +195,115 @@ export default function ProductCard({
           </div>
         )}
 
-        {cartState.message && showCartMessage && (
-          <p
-            className={
-              cartState.success
-                ? "mt-4 rounded-lg bg-green-950 p-3 text-sm text-green-300"
-                : "mt-4 rounded-lg bg-red-950 p-3 text-sm text-red-300"
-            }
-          >
-            {cartState.message}
-          </p>
-        )}
+        {cartState.message &&
+          showCartMessage && (
+            <div
+              className={`mt-4 rounded-2xl p-4 ${
+                cartState.success
+                  ? "status-success"
+                  : "status-danger"
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${
+                    cartState.success
+                      ? "bg-success"
+                      : "bg-danger"
+                  }`}
+                >
+                  {cartState.success
+                    ? "✓"
+                    : "!"}
+                </div>
 
-        {orderState.message && showOrderMessage && (
-          <div
-            className={
-              orderState.success
-                ? "mt-4 rounded-lg bg-green-950 p-3 text-sm text-green-300"
-                : "mt-4 rounded-lg bg-red-950 p-3 text-sm text-red-300"
-            }
-          >
-            <p>
-              {orderState.message}
-            </p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold">
+                    {cartState.message}
+                  </p>
 
-            {orderState.success && (
-              <Link
-                href="/orders"
-                className="mt-2 inline-block font-semibold underline"
+                  {cartState.success && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Link
+                        href="/cart"
+                        className="brand-button px-4 py-2 text-xs"
+                      >
+                        Sepete Git
+                      </Link>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowCartMessage(
+                            false,
+                          )
+                        }
+                        className="secondary-button px-4 py-2 text-xs"
+                      >
+                        Alışverişe Devam Et
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+        <div className="mt-auto pt-5">
+          <div className="grid gap-2.5">
+            <form action={cartAction}>
+              <input
+                type="hidden"
+                name="productId"
+                value={id}
+              />
+
+              <input
+                type="hidden"
+                name="quantity"
+                value={quantity}
+              />
+
+              <button
+                type="submit"
+                disabled={
+                  outOfStock ||
+                  isCartPending
+                }
+                className="secondary-button min-h-11 w-full rounded-xl px-4 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Siparişlerimi Gör
+                {outOfStock
+                  ? "Stokta Yok"
+                  : isCartPending
+                    ? "Sepete ekleniyor..."
+                    : "Sepete Ekle"}
+              </button>
+            </form>
+
+            {outOfStock ? (
+              <button
+                type="button"
+                disabled
+                className="brand-button min-h-11 w-full rounded-xl px-4 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Stokta Yok
+              </button>
+            ) : (
+              <Link
+                href={`/checkout?productId=${id}&quantity=${quantity}`}
+                className="brand-button flex min-h-11 w-full items-center justify-center rounded-xl px-4 py-3 text-sm"
+              >
+                Hemen Sipariş Ver
               </Link>
             )}
+
+            <Link
+              href={`/products/${id}`}
+              className="mt-1 rounded-lg py-2 text-center text-sm font-medium text-text-soft transition hover:bg-brand-pale hover:text-brand"
+            >
+              Ürünü İncele →
+            </Link>
           </div>
-        )}
-
-        <div className="mt-5 grid gap-3">
-          <form action={cartAction}>
-            <input
-              type="hidden"
-              name="productId"
-              value={id}
-            />
-
-            <input
-              type="hidden"
-              name="quantity"
-              value={quantity}
-            />
-
-            <button
-              type="submit"
-              disabled={
-                outOfStock ||
-                isCartPending
-              }
-              className="w-full rounded-lg border border-red-600 px-4 py-3 text-sm font-semibold text-red-400 transition hover:bg-red-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {isCartPending
-                ? "Sepete ekleniyor..."
-                : "Sepete Ekle"}
-            </button>
-          </form>
-
-          <form action={orderAction}>
-            <input
-              type="hidden"
-              name="productId"
-              value={id}
-            />
-
-            <input
-              type="hidden"
-              name="quantity"
-              value={quantity}
-            />
-
-            <button
-              type="submit"
-              disabled={
-                outOfStock ||
-                isOrderPending
-              }
-              className="w-full rounded-lg bg-red-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {isOrderPending
-                ? "Sipariş oluşturuluyor..."
-                : "Hemen Sipariş Ver"}
-            </button>
-          </form>
-
-          <Link
-            href={`/products/${id}`}
-            className="rounded-lg border border-zinc-700 px-4 py-3 text-center text-sm font-semibold text-zinc-300 transition hover:border-zinc-500 hover:text-white"
-          >
-            Ürünü İncele
-          </Link>
         </div>
       </div>
     </article>

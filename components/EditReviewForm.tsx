@@ -44,12 +44,12 @@ export default function EditReviewForm({
   return (
     <form
       action={formAction}
-      className="mt-5 rounded-xl border border-zinc-700 bg-zinc-950 p-5"
+      className="mt-5 rounded-2xl border border-border bg-surface-soft p-5"
     >
       <div>
         <label
           htmlFor={`rating-${reviewId}`}
-          className="mb-2 block text-sm font-semibold text-zinc-300"
+          className="mb-2 block text-sm font-semibold text-text-soft"
         >
           Puan
         </label>
@@ -59,7 +59,7 @@ export default function EditReviewForm({
           name="rating"
           value={rating}
           onChange={(event) => setRating(event.target.value)}
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-white outline-none focus:border-red-500"
+          className="field px-4 py-3 text-[#d9a514]"
         >
           <option value="5">★★★★★ - 5</option>
           <option value="4">★★★★☆ - 4</option>
@@ -72,7 +72,7 @@ export default function EditReviewForm({
       <div className="mt-4">
         <label
           htmlFor={`comment-${reviewId}`}
-          className="mb-2 block text-sm font-semibold text-zinc-300"
+          className="mb-2 block text-sm font-semibold text-text-soft"
         >
           Yorumunuz
         </label>
@@ -84,21 +84,21 @@ export default function EditReviewForm({
           value={comment}
           onChange={(event) => setComment(event.target.value)}
           required
-          className="w-full resize-y rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-3 text-white outline-none focus:border-red-500"
+          className="field resize-y px-4 py-3"
         />
       </div>
 
       {state.message && !state.success && (
-        <p className="mt-4 rounded-lg bg-red-950 p-3 text-sm text-red-300">
+        <div className="status-danger mt-4 rounded-2xl p-4 text-sm font-medium">
           {state.message}
-        </p>
+        </div>
       )}
 
       <div className="mt-4 flex flex-wrap gap-3">
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+          className="brand-button min-h-10 px-4 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isPending
             ? "Güncelleniyor..."
@@ -109,7 +109,7 @@ export default function EditReviewForm({
           type="button"
           onClick={onCancel}
           disabled={isPending}
-          className="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+          className="secondary-button min-h-10 px-4 py-2.5 text-sm disabled:cursor-not-allowed disabled:opacity-50"
         >
           İptal
         </button>

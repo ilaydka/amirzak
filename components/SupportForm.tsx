@@ -45,20 +45,12 @@ export default function SupportForm() {
   return (
     <form
       action={formAction}
-      className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6"
+      className="mt-6"
     >
-      <h2 className="text-2xl font-bold">
-        Destek Talebi Oluştur
-      </h2>
-
-      <p className="mt-2 text-zinc-400">
-        Sorununuzu veya talebinizi bize iletin.
-      </p>
-
-      <div className="mt-6">
+      <div>
         <label
           htmlFor="subject"
-          className="text-sm font-medium text-zinc-400"
+          className="text-sm font-medium text-text-soft"
         >
           Konu
         </label>
@@ -69,14 +61,14 @@ export default function SupportForm() {
           type="text"
           required
           placeholder="Örn. Siparişim hakkında"
-          className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-red-500"
+          className="field mt-2 px-4 py-3 placeholder:text-text-muted"
         />
       </div>
 
       <div className="mt-5">
         <label
           htmlFor="category"
-          className="text-sm font-medium text-zinc-400"
+          className="text-sm font-medium text-text-soft"
         >
           Kategori
         </label>
@@ -86,7 +78,7 @@ export default function SupportForm() {
           name="category"
           required
           defaultValue=""
-          className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none transition focus:border-red-500"
+          className="field mt-2 px-4 py-3"
         >
           <option value="" disabled>
             Kategori seçin
@@ -121,7 +113,7 @@ export default function SupportForm() {
       <div className="mt-5">
         <label
           htmlFor="message"
-          className="text-sm font-medium text-zinc-400"
+          className="text-sm font-medium text-text-soft"
         >
           Mesajınız
         </label>
@@ -132,26 +124,40 @@ export default function SupportForm() {
           rows={7}
           required
           placeholder="Sorununuzu detaylı şekilde açıklayın."
-          className="mt-2 w-full resize-y rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-red-500"
+          className="field mt-2 resize-y px-4 py-3 placeholder:text-text-muted"
         />
       </div>
 
       {state.message && showMessage && (
-        <p
-          className={
+        <div
+          className={`mt-5 rounded-2xl p-4 ${
             state.success
-              ? "mt-5 rounded-lg border border-green-900 bg-green-950 p-4 text-sm text-green-300"
-              : "mt-5 rounded-lg border border-red-900 bg-red-950 p-4 text-sm text-red-300"
-          }
+              ? "status-success"
+              : "status-danger"
+          }`}
         >
-          {state.message}
-        </p>
+          <div className="flex items-start gap-3">
+            <div
+              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${
+                state.success
+                  ? "bg-[#3f6b46]"
+                  : "bg-[#9a5548]"
+              }`}
+            >
+              {state.success ? "✓" : "!"}
+            </div>
+
+            <p className="text-sm font-semibold leading-6">
+              {state.message}
+            </p>
+          </div>
+        </div>
       )}
 
       <button
         type="submit"
         disabled={isPending}
-        className="mt-6 rounded-lg bg-red-600 px-6 py-3 font-semibold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+        className="brand-button mt-6 min-h-12 w-full rounded-xl px-6 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isPending
           ? "Gönderiliyor..."

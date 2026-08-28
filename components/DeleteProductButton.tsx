@@ -40,7 +40,7 @@ export default function DeleteProductButton({
       <button
         type="submit"
         disabled={isSubmitting}
-        className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+        className="danger-button min-h-10 px-4 py-2.5 text-sm !text-white disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isSubmitting ? "Siliniyor..." : "Sil"}
       </button>

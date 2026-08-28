@@ -1,39 +1,47 @@
-import Link from "next/link";
+import Image from "next/image";
 
 export default function Hero() {
   return (
-    <main className="bg-zinc-950 text-white">
-      <section className="flex min-h-[calc(100vh-81px)] flex-col items-center justify-center px-6 text-center">
-        <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-red-500">
-          AMİRZAK
-        </p>
+    <section className="bg-background px-6 pb-0 pt-8 sm:pt-10">
+      <div className="mx-auto max-w-7xl">
+        <div className="relative aspect-[3/2] overflow-hidden rounded-t-[30px] border border-b-0 border-border shadow-[0_16px_45px_rgba(31,53,28,0.07)]">
+          <Image
+            src="/images/home/home-hero-products.jpeg"
+            alt="AMİRZAK bitkileri ve bitki bakım ürünleri"
+            fill
+            priority
+            className="object-contain object-center"
+            sizes="100vw"
+          />
 
-        <h1 className="max-w-4xl text-5xl font-bold sm:text-7xl">
-          Aradığın ürünleri tek yerde keşfet.
-        </h1>
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-[64%] bg-gradient-to-r from-black/30 via-black/15 to-transparent" />
 
-        <p className="mt-6 max-w-2xl text-lg leading-8 text-zinc-400">
-          Farklı kategorilerdeki ürünleri keşfet,
-          karşılaştır ve güvenli bir alışveriş deneyimiyle
-          kolayca satın al.
-        </p>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[22%] bg-gradient-to-b from-transparent via-[#f4eee3]/10 to-[#eef1e7]/55" />
 
-        <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-          <Link
-            href="/products"
-            className="rounded-lg bg-red-600 px-6 py-3 font-semibold transition hover:bg-red-500"
-          >
-            Ürünleri Keşfet
-          </Link>
+          <div className="absolute left-[5%] top-[8%] z-10">
+            <div className="flex items-center justify-center gap-8 lg:gap-12">
+              <div className="flex shrink-0 items-center justify-center">
+                <Image
+                  src="/brand/amirzak-mark.png"
+                  alt="AMİRZAK"
+                  width={320}
+                  height={320}
+                  priority
+                  className="h-auto w-[185px] object-contain drop-shadow-[0_3px_8px_rgba(255,255,255,0.35)] sm:w-[215px] lg:w-[245px]"
+                />
+              </div>
 
-          <Link
-            href="/products"
-            className="rounded-lg border border-zinc-700 px-6 py-3 font-semibold transition hover:bg-zinc-900"
-          >
-            Alışverişe Başla
-          </Link>
+              <h1 className="max-w-[390px] font-serif text-4xl font-bold leading-[1.06] tracking-[-0.035em] text-white [text-shadow:0_3px_10px_rgba(0,0,0,0.85)] sm:text-5xl lg:text-[54px]">
+                Yaşam alanınıza
+                <br />
+                doğadan bir
+                <br />
+                parça katın
+              </h1>
+            </div>
+          </div>
         </div>
-      </section>
-    </main>
+      </div>
+    </section>
   );
 }

@@ -39,7 +39,7 @@ export default function ReviewForm({
   return (
     <form
       action={formAction}
-      className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6"
+      className="rounded-[24px] border border-border bg-surface p-6 shadow-sm sm:p-7"
     >
       <input
         type="hidden"
@@ -47,37 +47,63 @@ export default function ReviewForm({
         value={productId}
       />
 
-      <h3 className="text-xl font-bold">
-        Yorum Yap
-      </h3>
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-soft">
+          Değerlendirme
+        </p>
 
-      <div className="mt-5">
-        <label
-          htmlFor="rating"
-          className="mb-2 block text-sm font-semibold text-zinc-300"
-        >
-          Puan
-        </label>
+        <h3 className="mt-2 font-serif text-2xl font-semibold text-text">
+          Deneyiminizi Paylaşın
+        </h3>
 
-        <select
-          id="rating"
-          name="rating"
-          value={rating}
-          onChange={(event) => setRating(event.target.value)}
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none focus:border-red-500"
-        >
-          <option value="5">★★★★★ - 5</option>
-          <option value="4">★★★★☆ - 4</option>
-          <option value="3">★★★☆☆ - 3</option>
-          <option value="2">★★☆☆☆ - 2</option>
-          <option value="1">★☆☆☆☆ - 1</option>
-        </select>
+        <p className="mt-2 text-sm leading-6 text-text-soft">
+          Ürün hakkındaki görüşünüz diğer müşterilere yardımcı
+          olabilir.
+        </p>
       </div>
 
-      <div className="mt-5">
+      <div className="mt-6">
+        <p className="mb-3 text-sm font-semibold text-text-soft">
+          Puanınız
+        </p>
+
+        <div className="flex flex-wrap gap-2">
+          {[1, 2, 3, 4, 5].map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setRating(String(value))}
+              aria-label={`${value} yıldız`}
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-surface-soft text-xl transition hover:border-[#d9a514]"
+            >
+              <span
+                className={
+                  value <= Number(rating)
+                    ? "text-[#d9a514]"
+                    : "text-text-muted"
+                }
+              >
+                ★
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <input
+          type="hidden"
+          name="rating"
+          value={rating}
+        />
+
+        <p className="mt-2 text-xs text-text-muted">
+          {rating} / 5
+        </p>
+      </div>
+
+      <div className="mt-6">
         <label
           htmlFor="comment"
-          className="mb-2 block text-sm font-semibold text-zinc-300"
+          className="mb-2 block text-sm font-semibold text-text-soft"
         >
           Yorumunuz
         </label>
@@ -85,33 +111,35 @@ export default function ReviewForm({
         <textarea
           id="comment"
           name="comment"
-          rows={5}
+          rows={4}
           value={comment}
           onChange={(event) => setComment(event.target.value)}
-          placeholder="Ürün hakkındaki deneyiminizi paylaşın..."
+          placeholder="Bu ürünle ilgili deneyiminizi paylaşın..."
           required
-          className="w-full resize-y rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none focus:border-red-500"
+          className="field resize-y px-4 py-3 placeholder:text-text-muted"
         />
       </div>
 
       {state.message && (
-        <p
-          className={
+        <div
+          className={`mt-5 rounded-2xl p-4 text-sm font-medium ${
             state.success
-              ? "mt-5 rounded-lg bg-green-950 p-3 text-sm text-green-300"
-              : "mt-5 rounded-lg bg-red-950 p-3 text-sm text-red-300"
-          }
+              ? "status-success"
+              : "status-danger"
+          }`}
         >
           {state.message}
-        </p>
+        </div>
       )}
 
       <button
         type="submit"
         disabled={isPending}
-        className="mt-5 w-full rounded-lg bg-red-600 px-6 py-3 font-semibold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+        className="brand-button mt-5 min-h-12 w-full rounded-xl px-6 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {isPending ? "Yorum gönderiliyor..." : "Yorumu Gönder"}
+        {isPending
+          ? "Yorum gönderiliyor..."
+          : "Değerlendirmeyi Gönder"}
       </button>
     </form>
   );

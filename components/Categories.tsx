@@ -1,42 +1,33 @@
+import Link from "next/link";
+
 const categories = [
-  "Elektronik",
-  "Giyim",
-  "Ev & Yaşam",
-  "Kitap",
-  "Kozmetik",
-  "Spor",
-  "Otomotiv",
-  "Oyuncak",
+  "İç Mekan Bitkileri",
+  "Dış Mekan Bitkileri",
+  "Çiçekli Bitkiler",
+  "Sukulent & Kaktüs",
+  "Orkideler",
+  "Buket & Kesme Çiçek",
+  "Saksı & Aksesuar",
+  "Bitki Bakım Ürünleri",
 ];
 
 export default function Categories() {
   return (
-    <section className="bg-zinc-900 px-6 py-16 text-white">
+    <section className="bg-background px-6 pb-8 pt-8">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-10 text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-red-500">
-            Kategoriler
-          </p>
-
-          <h2 className="mt-3 text-3xl font-bold">
-            Popüler Kategorileri Keşfet
-          </h2>
-
-          <p className="mt-3 text-zinc-400">
-            İhtiyacınıza uygun ürünleri farklı kategorilerde inceleyin.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8">
           {categories.map((category) => (
-            <div
+            <Link
               key={category}
-              className="cursor-pointer rounded-xl border border-zinc-700 bg-zinc-950 p-6 text-center transition hover:border-red-500 hover:bg-zinc-800"
+              href={`/products?category=${encodeURIComponent(
+                category,
+              )}`}
+              className="group flex min-h-20 items-center justify-center rounded-2xl border border-border bg-surface px-4 py-4 text-center transition duration-300 hover:-translate-y-1 hover:border-border-brand hover:bg-brand-pale hover:shadow-md"
             >
-              <h3 className="font-semibold">
+              <span className="text-sm font-semibold leading-5 text-text transition-colors duration-300 group-hover:text-brand">
                 {category}
-              </h3>
-            </div>
+              </span>
+            </Link>
           ))}
         </div>
       </div>

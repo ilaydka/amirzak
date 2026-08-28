@@ -23,7 +23,7 @@ export default function RegisterForm() {
       <div>
         <label
           htmlFor="name"
-          className="mb-2 block text-sm font-medium text-zinc-300"
+          className="mb-2 block text-sm font-medium text-text-soft"
         >
           Ad Soyad
         </label>
@@ -33,14 +33,15 @@ export default function RegisterForm() {
           name="name"
           type="text"
           required
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none focus:border-red-500"
+          autoComplete="name"
+          className="field px-4 py-3"
         />
       </div>
 
       <div>
         <label
           htmlFor="email"
-          className="mb-2 block text-sm font-medium text-zinc-300"
+          className="mb-2 block text-sm font-medium text-text-soft"
         >
           E-posta
         </label>
@@ -50,14 +51,15 @@ export default function RegisterForm() {
           name="email"
           type="email"
           required
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none focus:border-red-500"
+          autoComplete="email"
+          className="field px-4 py-3"
         />
       </div>
 
       <div>
         <label
           htmlFor="password"
-          className="mb-2 block text-sm font-medium text-zinc-300"
+          className="mb-2 block text-sm font-medium text-text-soft"
         >
           Şifre
         </label>
@@ -68,14 +70,15 @@ export default function RegisterForm() {
           type="password"
           minLength={8}
           required
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none focus:border-red-500"
+          autoComplete="new-password"
+          className="field px-4 py-3"
         />
       </div>
 
       <div>
         <label
           htmlFor="confirmPassword"
-          className="mb-2 block text-sm font-medium text-zinc-300"
+          className="mb-2 block text-sm font-medium text-text-soft"
         >
           Şifre Tekrar
         </label>
@@ -86,28 +89,31 @@ export default function RegisterForm() {
           type="password"
           minLength={8}
           required
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none focus:border-red-500"
+          autoComplete="new-password"
+          className="field px-4 py-3"
         />
       </div>
 
       {state.message && (
-        <p
-          className={
+        <div
+          className={`rounded-2xl p-4 text-sm font-medium ${
             state.success
-              ? "rounded-lg bg-green-950 p-3 text-sm text-green-300"
-              : "rounded-lg bg-red-950 p-3 text-sm text-red-300"
-          }
+              ? "status-success"
+              : "status-danger"
+          }`}
         >
           {state.message}
-        </p>
+        </div>
       )}
 
       <button
         type="submit"
         disabled={isPending}
-        className="w-full rounded-lg bg-red-600 py-3 font-semibold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+        className="brand-button min-h-12 w-full rounded-xl px-6 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {isPending ? "Hesap oluşturuluyor..." : "Hesap Oluştur"}
+        {isPending
+          ? "Hesap oluşturuluyor..."
+          : "Hesap Oluştur"}
       </button>
     </form>
   );

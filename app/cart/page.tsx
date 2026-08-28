@@ -6,6 +6,10 @@ import CartItemCard from "@/components/CartItemCard";
 import CheckoutButton from "@/components/CheckoutButton";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import {
+  moneyToNumber,
+  optionalMoneyToNumber,
+} from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 
 type CartPageProps = {
@@ -26,6 +30,25 @@ function getCurrentPrice(
   }
 
   return price;
+}
+
+function EmptyCartIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-7 w-7"
+      aria-hidden="true"
+    >
+      <circle cx="9" cy="20" r="1" />
+      <circle cx="18" cy="20" r="1" />
+      <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L20 8H6" />
+    </svg>
+  );
 }
 
 export default async function CartPage({
@@ -57,92 +80,159 @@ export default async function CartPage({
 
   const cartItems = cart?.items ?? [];
 
-  const subtotal = cartItems.reduce(
-    (total, item) => {
-      const currentPrice = getCurrentPrice(
-        item.product.price,
-        item.product.discountPrice,
-      );
+  const normalizedCartItems =
+    cartItems.map((item) => ({
+      id: item.id,
+      quantity: item.quantity,
+      product: {
+        name: item.product.name,
+        category: item.product.category,
+        price: moneyToNumber(
+          item.product.price,
+        ),
+        discountPrice:
+          optionalMoneyToNumber(
+            item.product.discountPrice,
+          ),
+        imageUrl:
+          item.product.imageUrl,
+        stock: item.product.stock,
+        isActive:
+          item.product.isActive,
+      },
+    }));
 
-      return total + currentPrice * item.quantity;
-    },
-    0,
-  );
+  const subtotal =
+    normalizedCartItems.reduce(
+      (total, item) => {
+        const currentPrice =
+          getCurrentPrice(
+            item.product.price,
+            item.product.discountPrice,
+          );
 
-  const totalItemCount = cartItems.reduce(
-    (total, item) => total + item.quantity,
-    0,
-  );
+        return (
+          total +
+          currentPrice *
+            item.quantity
+        );
+      },
+      0,
+    );
 
-  const hasInactiveProduct = cartItems.some(
-    (item) => !item.product.isActive,
-  );
+  const totalItemCount =
+    normalizedCartItems.reduce(
+      (total, item) =>
+        total + item.quantity,
+      0,
+    );
+
+  const hasInactiveProduct =
+    normalizedCartItems.some(
+      (item) =>
+        !item.product.isActive,
+    );
 
   return (
     <>
       <Navbar />
 
-      <main className="min-h-screen bg-zinc-950 px-6 py-16 text-white">
-        <section className="mx-auto max-w-5xl">
+      <main className="page-shell">
+        <section className="page-section page-content max-w-5xl">
           <div className="mb-10">
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-red-500">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-brand-soft">
               Alışveriş Sepeti
             </p>
 
-            <h1 className="mt-3 text-4xl font-bold">
+            <h1 className="display-title mt-3 text-4xl text-text sm:text-5xl">
               Sepetim
             </h1>
 
-            {cartItems.length > 0 && (
-              <p className="mt-3 text-zinc-400">
-                Sepetinizde toplam {totalItemCount} ürün var.
+            {normalizedCartItems.length >
+              0 && (
+              <p className="mt-3 text-text-soft">
+                Sepetinizde toplam{" "}
+                {totalItemCount} ürün
+                var.
               </p>
             )}
           </div>
 
           {orderSuccess ? (
-            <div className="rounded-2xl border border-green-800 bg-green-950 p-8">
-              <h2 className="text-2xl font-bold text-green-300">
-                Siparişiniz başarıyla oluşturuldu.
-              </h2>
+            <div className="status-success rounded-[22px] p-8 shadow-sm">
+              <div className="flex items-start gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#3f6b46] text-lg font-bold text-white">
+                  ✓
+                </div>
 
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Link
-                  href="/products"
-                  className="rounded-lg bg-red-600 px-6 py-3 font-semibold text-white transition hover:bg-red-500"
-                >
-                  Alışverişe Devam Et
-                </Link>
+                <div className="min-w-0 flex-1">
+                  <h2 className="font-serif text-2xl font-semibold">
+                    Siparişiniz
+                    başarıyla
+                    oluşturuldu.
+                  </h2>
 
-                <Link
-                  href="/orders"
-                  className="rounded-lg border border-green-700 px-6 py-3 font-semibold text-green-200 transition hover:border-green-500 hover:text-white"
-                >
-                  Siparişlerimi Gör
-                </Link>
+                  <p className="mt-2 text-sm opacity-80">
+                    Siparişinizi
+                    hesabınızdan takip
+                    edebilir veya
+                    alışverişe devam
+                    edebilirsiniz.
+                  </p>
+
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <Link
+                      href="/products"
+                      className="brand-button px-6 py-3 text-sm"
+                    >
+                      Alışverişe Devam
+                      Et
+                    </Link>
+
+                    <Link
+                      href="/orders"
+                      className="secondary-button px-6 py-3 text-sm"
+                    >
+                      Siparişlerimi Gör
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
-          ) : cartItems.length === 0 ? (
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-10 text-center">
-              <h2 className="text-2xl font-bold">
-                Sepetiniz boş
-              </h2>
+          ) : normalizedCartItems.length ===
+            0 ? (
+            <div className="empty-state flex min-h-[310px] flex-col items-center justify-center px-6 py-12 text-center sm:px-10">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-pale text-brand">
+                <EmptyCartIcon />
+              </div>
 
-              <p className="mt-3 text-zinc-400">
-                Sepetinize henüz bir ürün eklemediniz.
-              </p>
+              <div className="mt-5 flex flex-col items-center">
+                <h2 className="font-serif text-2xl font-semibold text-text">
+                  Sepetiniz boş
+                </h2>
 
-              <div className="mt-6 flex flex-wrap justify-center gap-3">
+                <p className="mt-6 max-w-md text-center text-sm leading-6 text-text-soft">
+                  Henüz sepetinize bir
+                  ürün eklemediniz.
+                  AMİRZAK bitki ve
+                  çiçek koleksiyonunu
+                  keşfederek
+                  alışverişe
+                  başlayabilirsiniz.
+                </p>
+              </div>
+
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                 <Link
                   href="/products"
-                  className="rounded-lg bg-red-600 px-6 py-3 font-semibold transition hover:bg-red-500"
+                  className="brand-button px-6 py-3 text-sm"
                 >
-                  Ürünleri İncele
+                  Bitkileri Keşfet
                 </Link>
 
                 <Link
                   href="/orders"
-                  className="rounded-lg border border-zinc-700 px-6 py-3 font-semibold text-zinc-300 transition hover:border-zinc-500 hover:text-white"
+                  className="secondary-button px-6 py-3 text-sm"
                 >
                   Siparişlerimi Gör
                 </Link>
@@ -151,54 +241,87 @@ export default async function CartPage({
           ) : (
             <>
               {hasInactiveProduct && (
-                <div className="mb-6 rounded-2xl border border-red-900 bg-red-950 p-5 text-red-300">
-                  Sepetinizde artık satışta olmayan bir ürün bulunuyor.
-                  Sipariş vermeden önce bu ürünü sepetinizden kaldırın.
+                <div className="status-danger mb-6 rounded-2xl p-5 text-sm font-medium leading-6">
+                  Sepetinizde artık
+                  satışta olmayan bir
+                  ürün bulunuyor.
+                  Sipariş vermeden önce
+                  bu ürünü sepetinizden
+                  kaldırın.
                 </div>
               )}
 
-              <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
+              <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px]">
                 <div className="space-y-4">
-                  {cartItems.map((item) => (
-                    <CartItemCard
-                      key={item.id}
-                      item={item}
-                    />
-                  ))}
+                  {normalizedCartItems.map(
+                    (item) => (
+                      <CartItemCard
+                        key={item.id}
+                        item={item}
+                      />
+                    ),
+                  )}
                 </div>
 
-                <aside className="h-fit rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
-                  <h2 className="text-xl font-bold">
+                <aside className="panel h-fit p-6 lg:sticky lg:top-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-soft">
+                    Özet
+                  </p>
+
+                  <h2 className="mt-2 font-serif text-2xl font-semibold text-text">
                     Sipariş Özeti
                   </h2>
 
-                  <div className="mt-6 flex items-center justify-between text-zinc-300">
-                    <span>Ara toplam</span>
-
-                    <span>
-                      {subtotal.toLocaleString("tr-TR")} ₺
-                    </span>
-                  </div>
-
-                  <div className="mt-4 flex items-center justify-between text-zinc-300">
-                    <span>Kargo</span>
-                    <span>Ücretsiz</span>
-                  </div>
-
-                  <div className="mt-6 border-t border-zinc-800 pt-6">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">
-                        Genel toplam
+                  <div className="mt-6 space-y-4 text-sm text-text-soft">
+                    <div className="flex items-center justify-between gap-4">
+                      <span>
+                        Ara toplam
                       </span>
 
-                      <span className="text-2xl font-bold">
-                        {subtotal.toLocaleString("tr-TR")} ₺
+                      <span className="font-semibold text-text">
+                        {subtotal.toLocaleString(
+                          "tr-TR",
+                        )}{" "}
+                        ₺
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-4">
+                      <span>
+                        Kargo
+                      </span>
+
+                      <span className="font-semibold text-[#3f6b46]">
+                        Ücretsiz
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 border-t border-border pt-6">
+                    <div className="flex items-end justify-between gap-4">
+                      <div>
+                        <p className="text-sm font-medium text-text-soft">
+                          Genel toplam
+                        </p>
+
+                        <p className="mt-1 text-xs text-text-muted">
+                          KDV dahil
+                        </p>
+                      </div>
+
+                      <span className="text-2xl font-bold tracking-tight text-brand">
+                        {subtotal.toLocaleString(
+                          "tr-TR",
+                        )}{" "}
+                        ₺
                       </span>
                     </div>
                   </div>
 
                   {!hasInactiveProduct && (
-                    <CheckoutButton />
+                    <div className="mt-6">
+                      <CheckoutButton />
+                    </div>
                   )}
                 </aside>
               </div>

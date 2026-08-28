@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { auth } from "@/auth";
@@ -40,92 +41,126 @@ export default async function Navbar() {
   }
 
   return (
-    <header className="border-b border-zinc-800 bg-zinc-950 text-white">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-5">
-        <Link
-          href="/"
-          className="text-2xl font-bold tracking-tight"
-        >
-          AMİR<span className="text-red-500">ZAK</span>
-        </Link>
-
-        <div className="flex flex-wrap items-center justify-end gap-3">
+    <header className="border-b border-border bg-surface/95 text-text backdrop-blur">
+      <nav className="mx-auto max-w-7xl px-6">
+        <div className="grid h-[82px] grid-cols-[1fr_auto_1fr] items-center gap-8">
           <Link
             href="/"
-            className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
+            aria-label="AMİRZAK Ana Sayfa"
+            className="group flex h-[82px] items-center justify-self-start overflow-visible"
           >
-            Ana Sayfa
+            <Image
+              src="/brand/amirzak-logo.png"
+              alt="AMİRZAK"
+              width={700}
+              height={240}
+              priority
+              className="h-auto w-[260px] max-w-none object-contain transition duration-200 group-hover:opacity-85"
+            />
           </Link>
 
-          <Link
-            href="/products"
-            className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
-          >
-            Ürünler
-          </Link>
+          <div className="flex items-center justify-center gap-12">
+            <Link
+              href="/"
+              className="rounded-full px-6 py-2.5 text-[16px] font-semibold text-brand transition hover:bg-brand-pale"
+            >
+              Ana Sayfa
+            </Link>
 
-          <Link
-            href="/support"
-            className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
-          >
-            Destek
-          </Link>
+            <Link
+              href="/products"
+              className="rounded-full px-6 py-2.5 text-[16px] font-semibold text-brand transition hover:bg-brand-pale"
+            >
+              Ürünler
+            </Link>
 
-          {session?.user?.id ? (
-            <>
-              <Link
-                href="/cart"
-                className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
-              >
-                Sepetim
+            <Link
+              href="/support"
+              className="rounded-full px-6 py-2.5 text-[16px] font-semibold text-brand transition hover:bg-brand-pale"
+            >
+              Destek
+            </Link>
+          </div>
 
-                {cartItemCount > 0 && (
-                  <span className="ml-2 rounded-full bg-red-600 px-2 py-0.5 text-xs font-bold text-white">
-                    {cartItemCount}
-                  </span>
-                )}
-              </Link>
-
-              <Link
-                href="/orders"
-                className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
-              >
-                Siparişlerim
-              </Link>
-
-              <Link
-                href="/profile"
-                className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
-              >
-                Profilim
-              </Link>
-
-              {isAdmin && (
+          <div className="flex items-center justify-self-end gap-3">
+            {session?.user?.id ? (
+              <>
                 <Link
-                  href="/admin"
-                  className="rounded-lg border border-red-600 px-3 py-2 text-sm font-semibold text-red-400 transition hover:bg-red-600 hover:text-white"
+                  href="/cart"
+                  aria-label="Sepetim"
+                  title="Sepetim"
+                  className="relative flex h-10 w-10 items-center justify-center rounded-full border border-brand bg-white text-brand shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-pale hover:shadow-md"
                 >
-                  Admin
-                </Link>
-              )}
-            </>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                className="rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-900 hover:text-white"
-              >
-                Giriş Yap
-              </Link>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-5 w-5"
+                    aria-hidden="true"
+                  >
+                    <circle cx="9" cy="20" r="1" />
+                    <circle cx="19" cy="20" r="1" />
+                    <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L20 8H6" />
+                  </svg>
 
-              <Link
-                href="/register"
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-500"
-              >
-                Kayıt Ol
-              </Link>
-            </>
-          )}
+                  {cartItemCount > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold text-white">
+                      {cartItemCount}
+                    </span>
+                  )}
+                </Link>
+
+                <Link
+                  href="/profile"
+                  aria-label="Profilim"
+                  title="Profilim"
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-brand bg-white text-brand shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-pale hover:shadow-md"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-5 w-5"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="8" r="4" />
+                    <path d="M4.5 21a7.5 7.5 0 0 1 15 0" />
+                  </svg>
+                </Link>
+
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    className="rounded-full border border-brand bg-white px-4 py-2 text-sm font-semibold text-brand transition hover:bg-brand-pale"
+                  >
+                    Admin
+                  </Link>
+                )}
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="rounded-full border border-brand bg-white px-4 py-2 text-sm font-semibold text-brand transition hover:bg-brand-pale"
+                >
+                  Giriş Yap
+                </Link>
+
+                <Link
+                  href="/register"
+                  className="rounded-full border border-brand bg-white px-4 py-2 text-sm font-semibold text-brand transition hover:bg-brand-pale"
+                >
+                  Kayıt Ol
+                </Link>
+              </>
+            )}
+          </div>
         </div>
       </nav>
     </header>

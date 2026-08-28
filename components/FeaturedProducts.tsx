@@ -1,52 +1,76 @@
-import ProductCard from "@/components/ProductCard";
+import Link from "next/link";
+
+import FeaturedProductCard from "@/components/FeaturedProductCard";
+import {
+  moneyToNumber,
+  optionalMoneyToNumber,
+} from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 
 export default async function FeaturedProducts() {
   const products = await prisma.product.findMany({
     where: {
       isActive: true,
+      approvalStatus: "APPROVED",
+      stock: {
+        gt: 0,
+      },
     },
     orderBy: {
-      id: "asc",
+      createdAt: "desc",
     },
     take: 3,
   });
 
   return (
-    <section className="bg-zinc-950 px-6 py-16 text-white">
+    <section className="bg-[#f1eee5] px-6 py-16 sm:py-20">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-10 text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-red-500">
-            Öne Çıkanlar
-          </p>
+        <div className="mb-9 flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <h2 className="display-title text-3xl text-brand sm:text-4xl">
+              Yeni Keşifler
+            </h2>
 
-          <h2 className="mt-3 text-3xl font-bold">
-            Öne Çıkan Ürünler
-          </h2>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-text-soft sm:text-base">
+              Yeni ürünleri, bitkileri ve botanik seçimleri keşfedin.
+            </p>
+          </div>
 
-          <p className="mt-3 text-zinc-400">
-            AMİRZAK&apos;ta öne çıkan ürünleri keşfedin.
-          </p>
+          <Link
+            href="/products"
+            className="group inline-flex items-center gap-2 text-sm font-semibold text-brand"
+          >
+            Tüm ürünleri gör
+
+            <span className="transition-transform duration-200 group-hover:translate-x-1">
+              →
+            </span>
+          </Link>
         </div>
 
         {products.length === 0 ? (
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-8 text-center">
-            <p className="text-zinc-400">
-              Henüz öne çıkan ürün bulunmuyor.
+          <div className="py-16 text-center">
+            <h3 className="font-serif text-2xl font-semibold text-text">
+              Yeni ürünler hazırlanıyor
+            </h3>
+
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-text-soft">
+              Yeni ürünler yakında burada yer alacak.
             </p>
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-x-6 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
             {products.map((product) => (
-              <ProductCard
+              <FeaturedProductCard
                 key={product.id}
                 id={product.id}
                 name={product.name}
                 category={product.category}
-                price={product.price}
-                discountPrice={product.discountPrice}
+                price={moneyToNumber(product.price)}
+                discountPrice={optionalMoneyToNumber(
+                  product.discountPrice,
+                )}
                 imageUrl={product.imageUrl}
-                stock={product.stock}
               />
             ))}
           </div>

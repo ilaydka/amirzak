@@ -77,6 +77,32 @@ const profileSchema = z.object({
     ),
 });
 
+function normalizeNationalPhone(
+  phoneCountryCode: string,
+  phone: string,
+) {
+  let digits = phone.replace(/\D/g, "");
+
+  if (phoneCountryCode === "+90") {
+    if (digits.startsWith("90")) {
+      digits = digits.slice(2);
+    }
+
+    if (digits.startsWith("0")) {
+      digits = digits.slice(1);
+    }
+
+    if (
+      digits.length !== 10 ||
+      !digits.startsWith("5")
+    ) {
+      return null;
+    }
+  }
+
+  return digits;
+}
+
 export async function updateProfile(
   previousState: ProfileState,
   formData: FormData,
@@ -125,35 +151,49 @@ export async function updateProfile(
     address,
   } = result.data;
 
+  const nationalPhone =
+    normalizeNationalPhone(
+      phoneCountryCode,
+      phone,
+    );
+
+  if (!nationalPhone) {
+    return {
+      success: false,
+      message:
+        phoneCountryCode === "+90"
+          ? "Türkiye telefon numarası 5 ile başlamalı ve 10 haneli olmalıdır."
+          : "Geçerli bir telefon numarası girin.",
+    };
+  }
+
   let normalizedPhone: string | null = null;
 
-  if (phone) {
-    try {
-      const phoneNumber =
-        parsePhoneNumberFromString(
-          `${phoneCountryCode}${phone}`,
-        );
+  try {
+    const phoneNumber =
+      parsePhoneNumberFromString(
+        `${phoneCountryCode}${nationalPhone}`,
+      );
 
-      if (
-        !phoneNumber ||
-        !phoneNumber.isValid()
-      ) {
-        return {
-          success: false,
-          message:
-            "Geçerli bir telefon numarası girin.",
-        };
-      }
-
-      normalizedPhone =
-        phoneNumber.nationalNumber;
-    } catch {
+    if (
+      !phoneNumber ||
+      !phoneNumber.isValid()
+    ) {
       return {
         success: false,
         message:
           "Geçerli bir telefon numarası girin.",
       };
     }
+
+    normalizedPhone =
+      phoneNumber.nationalNumber;
+  } catch {
+    return {
+      success: false,
+      message:
+        "Geçerli bir telefon numarası girin.",
+    };
   }
 
   try {
@@ -191,8 +231,7 @@ export async function updateProfile(
 
         email,
 
-        phoneCountryCode:
-          phoneCountryCode || null,
+        phoneCountryCode,
 
         phone: normalizedPhone,
 
@@ -209,6 +248,7 @@ export async function updateProfile(
     });
 
     revalidatePath("/profile");
+    revalidatePath("/profile/edit");
     revalidatePath("/");
     revalidatePath("/orders");
 

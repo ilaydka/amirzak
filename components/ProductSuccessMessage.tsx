@@ -32,8 +32,8 @@ export default function ProductSuccessMessage({
     <div
       className={
         type === "success"
-          ? "mb-6 rounded-2xl border border-green-800 bg-green-950 p-5 text-green-300"
-          : "mb-6 rounded-2xl border border-red-800 bg-red-950 p-5 text-red-300"
+          ? "status-success mb-6 rounded-2xl p-5 text-sm font-medium"
+          : "status-danger mb-6 rounded-2xl p-5 text-sm font-medium"
       }
     >
       {message}

@@ -1,6 +1,11 @@
 "use client";
 
-import { useActionState } from "react";
+import Link from "next/link";
+import {
+  useActionState,
+  useEffect,
+  useState,
+} from "react";
 
 import {
   addToCart,
@@ -26,26 +31,85 @@ export default function AddToCartForm({
     initialState,
   );
 
+  const [showMessage, setShowMessage] = useState(false);
+
+  useEffect(() => {
+    if (!state.message) {
+      return;
+    }
+
+    setShowMessage(true);
+
+    if (!state.success) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setShowMessage(false);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [state]);
+
   return (
     <form action={formAction} className="mt-8">
-      <input type="hidden" name="productId" value={productId} />
+      <input
+        type="hidden"
+        name="productId"
+        value={productId}
+      />
 
-      {state.message && (
-        <p
-          className={
+      {state.message && showMessage && (
+        <div
+          className={`mb-4 rounded-2xl p-4 ${
             state.success
-              ? "mb-4 rounded-lg bg-green-950 p-3 text-sm text-green-300"
-              : "mb-4 rounded-lg bg-red-950 p-3 text-sm text-red-300"
-          }
+              ? "status-success"
+              : "status-danger"
+          }`}
         >
-          {state.message}
-        </p>
+          <div className="flex items-start gap-3">
+            <div
+              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${
+                state.success
+                  ? "bg-success"
+                  : "bg-danger"
+              }`}
+            >
+              {state.success ? "✓" : "!"}
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold">
+                {state.message}
+              </p>
+
+              {state.success && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link
+                    href="/cart"
+                    className="brand-button px-4 py-2 text-xs"
+                  >
+                    Sepete Git
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowMessage(false)}
+                    className="secondary-button px-4 py-2 text-xs"
+                  >
+                    Alışverişe Devam Et
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       <button
         type="submit"
         disabled={disabled || isPending}
-        className="w-full rounded-lg bg-red-600 px-6 py-4 font-semibold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
+        className="brand-button min-h-12 w-full rounded-xl px-6 py-4 text-sm disabled:cursor-not-allowed disabled:opacity-50"
       >
         {disabled
           ? "Stokta Yok"

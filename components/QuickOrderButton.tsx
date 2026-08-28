@@ -27,17 +27,29 @@ export default function QuickOrderButton({
 
   if (state.success) {
     return (
-      <div className="mt-4 rounded-xl border border-green-800 bg-green-950 p-4">
-        <p className="text-sm font-semibold text-green-300">
-          Siparişiniz başarıyla oluşturuldu.
-        </p>
+      <div className="status-success mt-4 rounded-2xl p-4">
+        <div className="flex items-start gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#3f6b46] text-sm font-bold text-white">
+            ✓
+          </div>
 
-        <Link
-          href="/orders"
-          className="mt-2 inline-block text-sm font-semibold text-green-200 underline"
-        >
-          Siparişimi Gör
-        </Link>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold">
+              Siparişiniz başarıyla oluşturuldu.
+            </p>
+
+            <p className="mt-1 text-xs opacity-80">
+              Siparişiniz hesabınıza kaydedildi.
+            </p>
+
+            <Link
+              href="/orders"
+              className="secondary-button mt-3 inline-flex px-4 py-2 text-xs"
+            >
+              Siparişimi Gör →
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
@@ -51,15 +63,23 @@ export default function QuickOrderButton({
       />
 
       {state.message && (
-        <p className="mb-3 rounded-lg bg-red-950 p-3 text-sm text-red-300">
-          {state.message}
-        </p>
+        <div className="status-danger mb-3 rounded-2xl p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#9a5548] text-sm font-bold text-white">
+              !
+            </div>
+
+            <p className="text-sm font-semibold leading-6">
+              {state.message}
+            </p>
+          </div>
+        </div>
       )}
 
       <button
         type="submit"
         disabled={isPending}
-        className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+        className="brand-button min-h-11 rounded-xl px-5 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isPending
           ? "Sipariş veriliyor..."

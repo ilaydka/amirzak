@@ -48,8 +48,8 @@ export default function CartItemCard({
     !item.product.isActive;
 
   return (
-    <article className="grid gap-6 rounded-2xl border border-zinc-800 bg-zinc-900 p-5 md:grid-cols-[140px_1fr_auto]">
-      <div className="flex h-32 items-center justify-center overflow-hidden rounded-xl bg-zinc-800">
+    <article className="panel grid gap-6 p-5 md:grid-cols-[140px_minmax(0,1fr)_auto]">
+      <div className="flex h-32 items-center justify-center overflow-hidden rounded-2xl border border-border bg-surface-soft">
         {item.product.imageUrl ? (
           <img
             src={item.product.imageUrl}
@@ -57,94 +57,102 @@ export default function CartItemCard({
             className="h-full w-full object-contain p-3"
           />
         ) : (
-          <span className="text-center text-sm text-zinc-500">
-            Ürün Görseli Yok
-          </span>
+          <div className="flex flex-col items-center gap-2 text-center text-text-muted">
+            <span className="text-2xl">
+              ◇
+            </span>
+
+            <span className="text-sm">
+              Ürün Görseli Yok
+            </span>
+          </div>
         )}
       </div>
 
-      <div>
-        <p className="text-sm font-semibold text-red-500">
+      <div className="min-w-0">
+        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand-soft">
           {item.product.category}
         </p>
 
-        <h2 className="mt-2 text-xl font-bold">
+        <h2 className="mt-2 font-serif text-xl font-semibold leading-snug text-text">
           {item.product.name}
         </h2>
 
         <div className="mt-4">
           {hasDiscount && (
-            <p className="text-sm text-zinc-500 line-through">
+            <p className="text-sm text-text-muted line-through">
               {item.product.price.toLocaleString("tr-TR")} ₺
             </p>
           )}
 
-          <p className="text-sm text-zinc-300">
+          <p className="mt-1 text-sm text-text-soft">
             Birim fiyat:{" "}
-            <span className="font-semibold text-white">
+            <span className="font-semibold text-brand">
               {currentPrice.toLocaleString("tr-TR")} ₺
             </span>
           </p>
         </div>
 
         {unavailable && (
-          <p className="mt-3 text-sm font-semibold text-red-400">
-            Bu ürün artık satışta değil.
-          </p>
+          <div className="status-danger mt-4 inline-flex rounded-full px-3 py-1.5 text-xs font-semibold">
+            Bu ürün artık satışta değil
+          </div>
         )}
 
         {!unavailable && outOfStock && (
-          <p className="mt-3 text-sm font-semibold text-red-400">
+          <div className="status-danger mt-4 inline-flex rounded-full px-3 py-1.5 text-xs font-semibold">
             Tükendi
-          </p>
+          </div>
         )}
 
         {!unavailable && lowStock && (
-          <p className="mt-3 text-sm font-semibold text-orange-400">
-            Son {item.product.stock} ürün!
-          </p>
+          <div className="status-warning mt-4 inline-flex rounded-full px-3 py-1.5 text-xs font-semibold">
+            Son {item.product.stock} ürün
+          </div>
         )}
 
-        <div className="mt-5 flex items-center gap-3">
-          <form action={decreaseCartItem}>
-            <input
-              type="hidden"
-              name="cartItemId"
-              value={item.id}
-            />
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <div className="flex items-center overflow-hidden rounded-full border border-border bg-surface">
+            <form action={decreaseCartItem}>
+              <input
+                type="hidden"
+                name="cartItemId"
+                value={item.id}
+              />
 
-            <button
-              type="submit"
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-700 text-lg font-bold transition hover:border-red-500 hover:text-red-500"
-              aria-label="Ürün adedini azalt"
-            >
-              −
-            </button>
-          </form>
+              <button
+                type="submit"
+                className="flex h-10 w-10 items-center justify-center text-lg font-semibold text-brand transition hover:bg-brand-pale"
+                aria-label="Ürün adedini azalt"
+              >
+                −
+              </button>
+            </form>
 
-          <span className="min-w-8 text-center font-semibold">
-            {item.quantity}
-          </span>
+            <span className="min-w-10 text-center text-sm font-semibold text-text">
+              {item.quantity}
+            </span>
 
-          <form action={increaseCartItem}>
-            <input
-              type="hidden"
-              name="cartItemId"
-              value={item.id}
-            />
+            <form action={increaseCartItem}>
+              <input
+                type="hidden"
+                name="cartItemId"
+                value={item.id}
+              />
 
-            <button
-              type="submit"
-              disabled={
-                unavailable ||
-                item.quantity >= item.product.stock
-              }
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-700 text-lg font-bold transition hover:border-red-500 hover:text-red-500 disabled:cursor-not-allowed disabled:opacity-40"
-              aria-label="Ürün adedini artır"
-            >
-              +
-            </button>
-          </form>
+              <button
+                type="submit"
+                disabled={
+                  unavailable ||
+                  item.quantity >= item.product.stock
+                }
+                className="flex h-10 w-10 items-center justify-center text-lg font-semibold text-brand transition hover:bg-brand-pale disabled:cursor-not-allowed disabled:opacity-35"
+                aria-label="Ürün adedini artır"
+              >
+                +
+              </button>
+            </form>
+          </div>
 
           <form action={removeCartItem}>
             <input
@@ -155,7 +163,7 @@ export default function CartItemCard({
 
             <button
               type="submit"
-              className="ml-3 rounded-lg px-3 py-2 text-sm font-semibold text-red-400 transition hover:bg-red-950 hover:text-red-300"
+              className="rounded-full border border-danger px-4 py-2 text-sm font-semibold text-danger transition hover:bg-danger-bg"
             >
               Sil
             </button>
@@ -169,13 +177,13 @@ export default function CartItemCard({
         )}
       </div>
 
-      <div className="flex flex-col justify-end md:text-right">
+      <div className="flex flex-col justify-end border-t border-border pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0 md:text-right">
         <div>
-          <p className="text-sm text-zinc-400">
+          <p className="text-sm text-text-muted">
             Satır toplamı
           </p>
 
-          <p className="mt-1 text-xl font-bold">
+          <p className="mt-1 text-xl font-bold tracking-tight text-brand">
             {lineTotal.toLocaleString("tr-TR")} ₺
           </p>
         </div>

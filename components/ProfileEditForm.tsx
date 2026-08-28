@@ -2,6 +2,7 @@
 
 import {
   useActionState,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -52,6 +53,49 @@ function getCountryName(
   return name;
 }
 
+function cleanTurkeyPhone(value: string) {
+  let digits = value.replace(/\D/g, "");
+
+  if (digits.startsWith("90")) {
+    digits = digits.slice(2);
+  }
+
+  if (digits.startsWith("0")) {
+    digits = digits.slice(1);
+  }
+
+  return digits.slice(0, 10);
+}
+
+function formatPhoneForCountry(
+  value: string,
+  isoCode: string,
+) {
+  try {
+    const rawValue =
+      isoCode === "TR"
+        ? cleanTurkeyPhone(value)
+        : value.replace(/\D/g, "");
+
+    const formatter = new AsYouType(
+      isoCode as CountryCode,
+    );
+
+    return formatter.input(rawValue);
+  } catch {
+    return value;
+  }
+}
+
+const inputClass =
+  "field mt-2 px-4 py-3 placeholder:text-text-muted";
+
+const selectClass =
+  "field px-4 py-3";
+
+const labelClass =
+  "text-sm font-semibold text-text-soft";
+
 export default function ProfileEditForm({
   currentFirstName,
   currentLastName,
@@ -74,30 +118,44 @@ export default function ProfileEditForm({
     [],
   );
 
-  const initialPhoneCountry =
-    countries.find((country) => {
-      const phoneCode = `+${country.phonecode.replace(
-        "+",
-        "",
-      )}`;
+  function findPhoneCountryIso(
+    phoneCountryCode: string | null,
+  ) {
+    if (
+      !phoneCountryCode ||
+      phoneCountryCode === "+90"
+    ) {
+      return "TR";
+    }
 
-      return (
-        phoneCode ===
-        (currentPhoneCountryCode ?? "+90")
-      );
-    }) ??
-    countries.find(
-      (country) =>
-        country.isoCode === "TR",
+    const matchedCountry =
+      countries.find((country) => {
+        const phoneCode = `+${country.phonecode.replace(
+          "+",
+          "",
+        )}`;
+
+        return phoneCode === phoneCountryCode;
+      });
+
+    return matchedCountry?.isoCode ?? "TR";
+  }
+
+  const initialPhoneCountryIso =
+    findPhoneCountryIso(
+      currentPhoneCountryCode,
     );
 
   const [phoneCountryIso, setPhoneCountryIso] =
     useState(
-      initialPhoneCountry?.isoCode ?? "TR",
+      initialPhoneCountryIso,
     );
 
-  const [phone, setPhone] = useState(
-    currentPhone ?? "",
+  const [phone, setPhone] = useState(() =>
+    formatPhoneForCountry(
+      currentPhone ?? "",
+      initialPhoneCountryIso,
+    ),
   );
 
   const [countryCode, setCountryCode] =
@@ -108,6 +166,31 @@ export default function ProfileEditForm({
   const [city, setCity] = useState(
     currentCity ?? "",
   );
+
+  /*
+    Kayıt başarılı olduğunda gerçek bir sayfa yenilemesi yapıyoruz.
+
+    Bunun nedeni:
+    - Veritabanına Türkiye doğru kaydediliyor.
+    - Sayfayı elle yenilediğinde Türkiye doğru geliyor.
+    - Sorun yalnızca kayıt sonrasında tarayıcıdaki eski form
+      değerlerinin ekranda kalması.
+
+    window.location.reload() ile temiz server verisi yeniden okunur.
+  */
+  useEffect(() => {
+    if (!state.success) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      window.location.reload();
+    }, 350);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [state.success]);
 
   const regions = useMemo(() => {
     return (
@@ -134,6 +217,10 @@ export default function ProfileEditForm({
 
   const phonePlaceholder =
     useMemo(() => {
+      if (phoneCountryIso === "TR") {
+        return "532 123 45 67";
+      }
+
       try {
         const example =
           getExampleNumber(
@@ -163,10 +250,10 @@ export default function ProfileEditForm({
   function handlePhoneCountryChange(
     event: React.ChangeEvent<HTMLSelectElement>,
   ) {
-    setPhoneCountryIso(
-      event.target.value,
-    );
+    const newIsoCode =
+      event.target.value;
 
+    setPhoneCountryIso(newIsoCode);
     setPhone("");
   }
 
@@ -176,26 +263,24 @@ export default function ProfileEditForm({
     const rawValue =
       event.target.value;
 
-    try {
-      const formatter = new AsYouType(
-        phoneCountryIso as CountryCode,
-      );
-
-      setPhone(
-        formatter.input(rawValue),
-      );
-    } catch {
-      setPhone(rawValue);
-    }
+    setPhone(
+      formatPhoneForCountry(
+        rawValue,
+        phoneCountryIso,
+      ),
+    );
   }
 
   return (
-    <form action={formAction}>
+    <form
+      action={formAction}
+      autoComplete="off"
+    >
       <div className="grid gap-5 md:grid-cols-2">
         <div>
           <label
             htmlFor="firstName"
-            className="text-sm font-medium text-zinc-400"
+            className={labelClass}
           >
             Ad
           </label>
@@ -209,14 +294,15 @@ export default function ProfileEditForm({
             }
             required
             placeholder="Adınız"
-            className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-red-500"
+            autoComplete="given-name"
+            className={inputClass}
           />
         </div>
 
         <div>
           <label
             htmlFor="lastName"
-            className="text-sm font-medium text-zinc-400"
+            className={labelClass}
           >
             Soyad
           </label>
@@ -230,7 +316,8 @@ export default function ProfileEditForm({
             }
             required
             placeholder="Soyadınız"
-            className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-red-500"
+            autoComplete="family-name"
+            className={inputClass}
           />
         </div>
       </div>
@@ -238,7 +325,7 @@ export default function ProfileEditForm({
       <div className="mt-5">
         <label
           htmlFor="email"
-          className="text-sm font-medium text-zinc-400"
+          className={labelClass}
         >
           E-posta
         </label>
@@ -252,14 +339,15 @@ export default function ProfileEditForm({
           }
           required
           placeholder="ornek@email.com"
-          className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-red-500"
+          autoComplete="email"
+          className={inputClass}
         />
       </div>
 
       <div className="mt-5">
         <label
           htmlFor="phone"
-          className="text-sm font-medium text-zinc-400"
+          className={labelClass}
         >
           Telefon
         </label>
@@ -272,7 +360,8 @@ export default function ProfileEditForm({
               handlePhoneCountryChange
             }
             required
-            className="rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none transition focus:border-red-500"
+            autoComplete="off"
+            className={selectClass}
           >
             {countries.map(
               (country) => {
@@ -312,7 +401,7 @@ export default function ProfileEditForm({
             id="phone"
             name="phone"
             type="tel"
-            inputMode="tel"
+            inputMode="numeric"
             autoComplete="tel-national"
             value={phone}
             onChange={
@@ -322,20 +411,21 @@ export default function ProfileEditForm({
             placeholder={
               phonePlaceholder
             }
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-red-500"
+            className={selectClass}
           />
         </div>
 
-        <p className="mt-2 text-xs text-zinc-500">
-          Ülke kodunu tekrar yazmadan telefon
-          numaranızı girin.
+        <p className="mt-2 text-xs text-text-muted">
+          {phoneCountryIso === "TR"
+            ? "Türkiye için +90 ve baştaki 0'ı tekrar yazmayın. Örnek: 532 123 45 67"
+            : "Ülke kodunu tekrar yazmadan telefon numaranızı girin."}
         </p>
       </div>
 
       <div className="mt-5">
         <label
           htmlFor="countryCode"
-          className="text-sm font-medium text-zinc-400"
+          className={labelClass}
         >
           Ülke
         </label>
@@ -348,7 +438,8 @@ export default function ProfileEditForm({
             handleCountryChange
           }
           required
-          className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none transition focus:border-red-500"
+          autoComplete="off"
+          className={`mt-2 ${selectClass}`}
         >
           {countries.map(
             (country) => (
@@ -369,7 +460,7 @@ export default function ProfileEditForm({
       <div className="mt-5">
         <label
           htmlFor="city"
-          className="text-sm font-medium text-zinc-400"
+          className={labelClass}
         >
           Şehir / Eyalet / Bölge
         </label>
@@ -385,7 +476,8 @@ export default function ProfileEditForm({
               )
             }
             required
-            className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none transition focus:border-red-500"
+            autoComplete="off"
+            className={`mt-2 ${selectClass}`}
           >
             <option value="">
               Şehir / Eyalet / Bölge seçin
@@ -415,7 +507,8 @@ export default function ProfileEditForm({
             }
             required
             placeholder="Şehir / Eyalet / Bölge"
-            className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-red-500"
+            autoComplete="address-level1"
+            className={inputClass}
           />
         )}
       </div>
@@ -423,7 +516,7 @@ export default function ProfileEditForm({
       <div className="mt-5">
         <label
           htmlFor="postalCode"
-          className="text-sm font-medium text-zinc-400"
+          className={labelClass}
         >
           Posta Kodu
         </label>
@@ -437,14 +530,15 @@ export default function ProfileEditForm({
           }
           required
           placeholder="Posta kodu"
-          className="mt-2 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-red-500"
+          autoComplete="postal-code"
+          className={inputClass}
         />
       </div>
 
       <div className="mt-5">
         <label
           htmlFor="address"
-          className="text-sm font-medium text-zinc-400"
+          className={labelClass}
         >
           Adres
         </label>
@@ -458,26 +552,27 @@ export default function ProfileEditForm({
           }
           required
           placeholder="Mahalle, cadde, sokak, bina no, daire no ve diğer adres bilgileri"
-          className="mt-2 w-full resize-y rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-red-500"
+          autoComplete="street-address"
+          className="field mt-2 resize-y px-4 py-3 placeholder:text-text-muted"
         />
       </div>
 
       {state.message && (
-        <p
-          className={
+        <div
+          className={`mt-5 rounded-2xl p-4 text-sm font-medium ${
             state.success
-              ? "mt-5 rounded-lg border border-green-900 bg-green-950 p-4 text-sm text-green-300"
-              : "mt-5 rounded-lg border border-red-900 bg-red-950 p-4 text-sm text-red-300"
-          }
+              ? "status-success"
+              : "status-danger"
+          }`}
         >
           {state.message}
-        </p>
+        </div>
       )}
 
       <button
         type="submit"
         disabled={isPending}
-        className="mt-6 rounded-lg bg-red-600 px-6 py-3 font-semibold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+        className="brand-button mt-6 min-h-12 px-6 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isPending
           ? "Kaydediliyor..."

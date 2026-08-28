@@ -19,7 +19,7 @@ export default function LoginForm() {
       <div>
         <label
           htmlFor="email"
-          className="mb-2 block text-sm font-medium text-zinc-300"
+          className="mb-2 block text-sm font-medium text-text-soft"
         >
           E-posta
         </label>
@@ -30,14 +30,14 @@ export default function LoginForm() {
           type="email"
           required
           autoComplete="email"
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none focus:border-red-500"
+          className="field px-4 py-3"
         />
       </div>
 
       <div>
         <label
           htmlFor="password"
-          className="mb-2 block text-sm font-medium text-zinc-300"
+          className="mb-2 block text-sm font-medium text-text-soft"
         >
           Şifre
         </label>
@@ -48,20 +48,20 @@ export default function LoginForm() {
           type="password"
           required
           autoComplete="current-password"
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-3 text-white outline-none focus:border-red-500"
+          className="field px-4 py-3"
         />
       </div>
 
       {state.message && (
-        <p className="rounded-lg bg-red-950 p-3 text-sm text-red-300">
+        <div className="status-danger rounded-2xl p-4 text-sm font-medium">
           {state.message}
-        </p>
+        </div>
       )}
 
       <button
         type="submit"
         disabled={isPending}
-        className="w-full rounded-lg bg-red-600 py-3 font-semibold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+        className="brand-button min-h-12 w-full rounded-xl px-6 py-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isPending ? "Giriş yapılıyor..." : "Giriş Yap"}
       </button>

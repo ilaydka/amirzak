@@ -25,6 +25,28 @@ export type ReviewState = {
   message: string;
 };
 
+async function hasPurchasedProduct(
+  userId: string,
+  productId: number,
+) {
+  const order = await prisma.order.findFirst({
+    where: {
+      userId,
+      status: "DELIVERED",
+      items: {
+        some: {
+          productId,
+        },
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  return Boolean(order);
+}
+
 export async function createReview(
   previousState: ReviewState,
   formData: FormData,
@@ -61,13 +83,27 @@ export async function createReview(
     },
     select: {
       id: true,
+      isActive: true,
     },
   });
 
-  if (!product) {
+  if (!product || !product.isActive) {
     return {
       success: false,
       message: "Ürün bulunamadı.",
+    };
+  }
+
+  const purchased = await hasPurchasedProduct(
+    session.user.id,
+    productId,
+  );
+
+  if (!purchased) {
+    return {
+      success: false,
+      message:
+        "Bu ürünü değerlendirebilmek için ürünü satın almış ve siparişinizi teslim almış olmalısınız.",
     };
   }
 
